@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Vecka">
+<title>Vecka</title>
+<style>
+    @font-face {
+        font-family: "Space Mono";
+        src: url("fonts/space-mono-regular.woff") format("woff");
+        font-weight: 400;
+        font-style: normal;
+    }
+    @font-face {
+        font-family: "Space Mono";
+        src: url("fonts/space-mono-bold.woff") format("woff");
+        font-weight: 700;
+        font-style: normal;
+    }
+    * {
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+    }
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #000;
+        font-family: "Space Mono", Helvetica, Arial, sans-serif;
+    }
+    #app {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+    .topbar {
+        text-align: right;
+        padding: 12px 24px 0 24px;
+    }
+    .link {
+        background: none;
+        border: none;
+        color: #555;
+        font-size: 18px;
+        padding: 12px 8px;
+        min-height: 48px;
+        text-decoration: underline;
+        font-family: inherit;
+    }
+    .day {
+        border-bottom: 1px solid #888;
+        padding: 0 24px;
+    }
+    .day-head {
+        display: block;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 28px 0;
+        font-family: inherit;
+        font-size: 44px;
+        font-weight: bold;
+        letter-spacing: -2px;
+        color: #222;
+        /* Space Mono vai só até 700; o contorno engrossa o traço ("faux black") */
+        -webkit-text-stroke: 2px currentColor;
+    }
+    .open .day-head {
+        padding-bottom: 4px;
+        font-size: 52px;
+        color: #000;
+        -webkit-text-stroke: 2.5px currentColor;
+    }
+    .date {
+        color: #444;
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+    .count {
+        font-size: 20px;
+        font-weight: normal;
+        color: #666;
+        letter-spacing: 0;
+        -webkit-text-stroke: 0;
+    }
+    .task {
+        display: table;
+        width: 100%;
+        min-height: 52px;
+    }
+    .task-main, .task-actions {
+        display: table-cell;
+        vertical-align: middle;
+    }
+    .task-main {
+        padding: 6px 0;
+        font-size: 22px;
+    }
+    .task-actions {
+        width: 1%;
+        white-space: nowrap;
+    }
+    .box {
+        display: inline-block;
+        width: 26px;
+        height: 26px;
+        border: 2px solid #000;
+        margin-right: 12px;
+        vertical-align: middle;
+        text-align: center;
+        line-height: 22px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .done .box {
+        background: #000;
+        color: #fff;
+    }
+    .done .label {
+        text-decoration: line-through;
+        color: #777;
+    }
+    .rec {
+        color: #666;
+        font-size: 18px;
+        margin-left: 6px;
+    }
+    .small {
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 17px;
+        min-width: 48px;
+        min-height: 48px;
+        font-family: inherit;
+    }
+    .add {
+        margin: 12px 0 28px 0;
+    }
+    .add input[type=text], .edit input[type=text] {
+        width: 100%;
+        border: none;
+        border-bottom: 1px solid #999;
+        font-size: 22px;
+        padding: 12px 0;
+        font-family: inherit;
+        background: transparent;
+        color: #000;
+        border-radius: 0;
+        -webkit-appearance: none;
+    }
+    .weekdays {
+        margin-top: 10px;
+    }
+    .wd {
+        display: inline-block;
+        width: 48px;
+        height: 48px;
+        border: 2px solid #000;
+        background: #fff;
+        color: #000;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 4px 6px 0;
+        font-family: inherit;
+    }
+    .wd.on {
+        background: #000;
+        color: #fff;
+    }
+    .hint {
+        font-size: 16px;
+        color: #666;
+        margin: 6px 0;
+    }
+    .btn {
+        border: 2px solid #000;
+        background: #000;
+        color: #fff;
+        font-size: 18px;
+        padding: 0 18px;
+        min-height: 48px;
+        margin: 8px 8px 0 0;
+        font-family: inherit;
+    }
+    .btn.alt {
+        background: #fff;
+        color: #000;
+    }
+    .edit {
+        padding: 8px 0 16px 0;
+    }
+    .msg {
+        padding: 40px 24px;
+        font-size: 22px;
+    }
+    .status {
+        padding: 8px 24px;
+        font-size: 16px;
+        color: #666;
+    }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+    // ===== Configuração (preencher com os dados do seu projeto Supabase) =====
+    var SUPABASE_URL = "COLE_AQUI_A_URL_DO_PROJETO";
+    var SUPABASE_ANON_KEY = "COLE_AQUI_A_ANON_KEY";
+    // ==========================================================================
+
+    var DAY_NAMES = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
+    var DAY_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
+    var MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
+        "agosto", "setembro", "outubro", "novembro", "dezembro"];
+
+    var DEMO = SUPABASE_URL.indexOf("http") !== 0;
+
+    var state = {
+        token: null,
+        weekStart: null,
+        todayDow: 0,
+        openDay: 0,
+        tasks: [],
+        editingId: null,
+        editDays: [],
+        addRepeat: false,
+        addDays: [],
+        loading: false,
+        error: null
+    };
+
+    var app = document.getElementById("app");
+
+    // ---------- utilidades ----------
+
+    function getToken() {
+        var m = /[#&]t=([^&]+)/.exec(window.location.hash || "");
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    function pad(n) {
+        return n < 10 ? "0" + n : "" + n;
+    }
+
+    function parseDate(s) {
+        var p = s.split("-");
+        return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10), 12, 0, 0);
+    }
+
+    function formatISO(d) {
+        return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+    }
+
+    function dateOfDay(dow) {
+        var d = parseDate(state.weekStart);
+        d.setDate(d.getDate() + dow);
+        return d;
+    }
+
+    function escapeHtml(s) {
+        return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function contains(arr, v) {
+        if (!arr) {
+            return false;
+        }
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] == v) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function toggleIn(arr, v) {
+        var out = [];
+        var found = false;
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] == v) {
+                found = true;
+            } else {
+                out.push(arr[i]);
+            }
+        }
+        if (!found) {
+            out.push(v);
+        }
+        out.sort();
+        return out;
+    }
+
+    function findTask(id) {
+        for (var i = 0; i < state.tasks.length; i++) {
+            if (state.tasks[i].id == id) {
+                return state.tasks[i];
+            }
+        }
+        return null;
+    }
+
+    function tasksForDay(dow) {
+        var out = [];
+        for (var i = 0; i < state.tasks.length; i++) {
+            var t = state.tasks[i];
+            if (t.recurring_days ? contains(t.recurring_days, dow) : t.day == dow) {
+                out.push(t);
+            }
+        }
+        return out;
+    }
+
+    function isDone(t, dow) {
+        return contains(t.done_dates, formatISO(dateOfDay(dow)));
+    }
+
+    // ---------- backend ----------
+
+    function rpc(name, params, cb) {
+        if (DEMO) {
+            demoRpc(name, params, cb);
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", SUPABASE_URL + "/rest/v1/rpc/" + name, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("apikey", SUPABASE_ANON_KEY);
+        xhr.setRequestHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) {
+                return;
+            }
+            if (xhr.status >= 200 && xhr.status < 300) {
+                var data = null;
+                try {
+                    data = xhr.responseText ? JSON.parse(xhr.responseText) : null;
+                } catch (e) {
+                    data = null;
+                }
+                cb(null, data);
+            } else {
+                cb("Erro " + xhr.status + " ao falar com o servidor");
+            }
+        };
+        params.p_token = state.token;
+        xhr.send(JSON.stringify(params));
+    }
+
+    // Modo demonstração: funciona sem Supabase, guardando no navegador
+    var demoData = null;
+
+    function demoLoad() {
+        if (demoData) {
+            return;
+        }
+        demoData = { nextId: 1, tasks: [] };
+        try {
+            var raw = window.localStorage.getItem("kindle-todo-demo");
+            if (raw) {
+                demoData = JSON.parse(raw);
+            }
+        } catch (e) {
+            demoData = { nextId: 1, tasks: [] };
+        }
+    }
+
+    function demoSave() {
+        try {
+            window.localStorage.setItem("kindle-todo-demo", JSON.stringify(demoData));
+        } catch (e) {
+            // sem localStorage: continua só em memória
+        }
+    }
+
+    function demoRpc(name, p, cb) {
+        demoLoad();
+        var now = new Date();
+        var ws = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay(), 12, 0, 0);
+        var wsIso = formatISO(ws);
+        var i, t, kept;
+        if (name === "kt_list") {
+            kept = [];
+            for (i = 0; i < demoData.tasks.length; i++) {
+                t = demoData.tasks[i];
+                if (t.recurring_days || t.week_start === wsIso) {
+                    kept.push(t);
+                }
+            }
+            demoData.tasks = kept;
+            demoSave();
+            cb(null, { week_start: wsIso, today_dow: now.getDay(), tasks: demoData.tasks });
+            return;
+        }
+        if (name === "kt_add") {
+            t = { id: demoData.nextId++, text: p.p_text, done_dates: [] };
+            if (p.p_days && p.p_days.length) {
+                t.recurring_days = p.p_days;
+                t.day = null;
+            } else {
+                t.recurring_days = null;
+                t.day = p.p_day;
+                t.week_start = wsIso;
+            }
+            demoData.tasks.push(t);
+        }
+        for (i = 0; i < demoData.tasks.length; i++) {
+            t = demoData.tasks[i];
+            if (t.id != p.p_id) {
+                continue;
+            }
+            if (name === "kt_toggle") {
+                t.done_dates = toggleIn(t.done_dates, p.p_date);
+            } else if (name === "kt_update") {
+                t.text = p.p_text;
+                if (p.p_days && p.p_days.length) {
+                    t.recurring_days = p.p_days;
+                    t.day = null;
+                } else {
+                    if (t.recurring_days) {
+                        t.day = p.p_day;
+                        t.week_start = wsIso;
+                    }
+                    t.recurring_days = null;
+                }
+            } else if (name === "kt_delete") {
+                demoData.tasks.splice(i, 1);
+            }
+            break;
+        }
+        demoSave();
+        cb(null, null);
+    }
+
+    function load() {
+        state.loading = true;
+        render();
+        rpc("kt_list", {}, function (err, data) {
+            state.loading = false;
+            if (err) {
+                state.error = err;
+            } else {
+                state.error = null;
+                var first = state.weekStart === null;
+                state.weekStart = data.week_start;
+                state.todayDow = data.today_dow;
+                state.tasks = data.tasks || [];
+                if (first) {
+                    state.openDay = state.todayDow;
+                }
+            }
+            render();
+        });
+    }
+
+    function act(name, params) {
+        state.loading = true;
+        render();
+        rpc(name, params, function (err) {
+            if (err) {
+                state.loading = false;
+                state.error = err;
+                render();
+                return;
+            }
+            load();
+        });
+    }
+
+    // ---------- interface ----------
+
+    function weekdayButtons(selected, action) {
+        var h = '<div class="weekdays">';
+        for (var d = 0; d < 7; d++) {
+            h += '<button type="button" class="wd' + (contains(selected, d) ? " on" : "") +
+                '" data-action="' + action + '" data-day="' + d + '">' + DAY_SHORT[d] + "</button>";
+        }
+        return h + "</div>";
+    }
+
+    function renderTask(t, dow) {
+        if (state.editingId == t.id) {
+            return '<form class="edit" data-form="edit" data-id="' + t.id + '">' +
+                '<input type="text" id="edit-text" value="' + escapeHtml(t.text) + '">' +
+                '<div class="hint">Repetir nos dias (nenhum = só esta semana):</div>' +
+                weekdayButtons(state.editDays, "edit-day") +
+                '<button type="submit" class="btn">Salvar</button>' +
+                '<button type="button" class="btn alt" data-action="cancel-edit">Cancelar</button>' +
+                "</form>";
+        }
+        var done = isDone(t, dow);
+        return '<div class="task' + (done ? " done" : "") + '">' +
+            '<div class="task-main" data-action="toggle" data-id="' + t.id + '" data-day="' + dow + '">' +
+            '<span class="box">' + (done ? "✓" : "") + "</span>" +
+            '<span class="label">' + escapeHtml(t.text) + "</span>" +
+            (t.recurring_days ? '<span class="rec">↻</span>' : "") +
+            "</div>" +
+            '<div class="task-actions">' +
+            '<button type="button" class="small" data-action="edit" data-id="' + t.id + '">editar</button>' +
+            '<button type="button" class="small" data-action="delete" data-id="' + t.id + '">✕</button>' +
+            "</div></div>";
+    }
+
+    function renderDay(dow) {
+        var list = tasksForDay(dow);
+        var open = dow === state.openDay;
+        var h = '<div class="day' + (open ? " open" : "") + '">';
+        if (!open) {
+            var pending = 0;
+            for (var j = 0; j < list.length; j++) {
+                if (!isDone(list[j], dow)) {
+                    pending++;
+                }
+            }
+            h += '<button type="button" class="day-head" data-action="open" data-day="' + dow + '">' +
+                DAY_NAMES[dow] +
+                (pending ? ' <span class="count">' + pending + "</span>" : "") +
+                (dow < state.todayDow ? ' <span class="count">· já passou</span>' : "") +
+                "</button></div>";
+            return h;
+        }
+        var d = dateOfDay(dow);
+        h += '<div class="day-head">' + DAY_NAMES[dow] + "</div>";
+        h += '<div class="date">' + d.getDate() + " de " + MONTHS[d.getMonth()] +
+            (dow === state.todayDow ? " — hoje" : "") + "</div>";
+        for (var i = 0; i < list.length; i++) {
+            h += renderTask(list[i], dow);
+        }
+        h += '<form class="add" data-form="add">' +
+            '<input type="text" id="add-text" placeholder="Adicionar tarefa..." autocomplete="off">';
+        if (state.addRepeat) {
+            h += '<div class="hint">Repetir toda semana nos dias:</div>' +
+                weekdayButtons(state.addDays, "add-day") +
+                '<button type="submit" class="btn">Adicionar</button>' +
+                '<button type="button" class="btn alt" data-action="add-repeat">Não repetir</button>';
+        } else {
+            h += '<button type="submit" class="btn">Adicionar</button>' +
+                '<button type="button" class="btn alt" data-action="add-repeat">↻ Repetir</button>';
+        }
+        h += "</form></div>";
+        return h;
+    }
+
+    function render() {
+        if (!state.token) {
+            app.innerHTML = '<div class="msg">Link inválido.</div>';
+            return;
+        }
+        if (state.weekStart === null) {
+            app.innerHTML = '<div class="msg">' + (state.error ? escapeHtml(state.error) : "Carregando...") + "</div>";
+            return;
+        }
+        var h = '<div class="topbar">' +
+            '<button type="button" class="link" data-action="refresh">atualizar</button></div>';
+        if (state.loading || state.error || DEMO) {
+            h += '<div class="status">' +
+                (state.error ? escapeHtml(state.error) : state.loading ? "Salvando..." : "Modo demonstração (sem servidor)") +
+                "</div>";
+        }
+        // O dia aberto fica no topo; os demais seguem a ordem da semana a partir dele
+        for (var k = 0; k < 7; k++) {
+            h += renderDay((state.openDay + k) % 7);
+        }
+        app.innerHTML = h;
+    }
+
+    function closest(el, attr) {
+        while (el && el !== app) {
+            if (el.getAttribute && el.getAttribute(attr) !== null) {
+                return el;
+            }
+            el = el.parentNode;
+        }
+        return null;
+    }
+
+    app.onclick = function (e) {
+        e = e || window.event;
+        var el = closest(e.target || e.srcElement, "data-action");
+        if (!el) {
+            return;
+        }
+        var action = el.getAttribute("data-action");
+        var id = el.getAttribute("data-id");
+        var day = parseInt(el.getAttribute("data-day"), 10);
+        var t;
+
+        if (action === "refresh") {
+            load();
+        } else if (action === "open") {
+            state.openDay = day;
+            state.editingId = null;
+            state.addRepeat = false;
+            render();
+            window.scrollTo(0, 0);
+        } else if (action === "toggle") {
+            act("kt_toggle", { p_id: parseInt(id, 10), p_date: formatISO(dateOfDay(day)) });
+        } else if (action === "edit") {
+            t = findTask(id);
+            state.editingId = t.id;
+            state.editDays = t.recurring_days ? t.recurring_days.slice(0) : [];
+            render();
+        } else if (action === "cancel-edit") {
+            state.editingId = null;
+            render();
+        } else if (action === "edit-day") {
+            state.editDays = toggleIn(state.editDays, day);
+            keepInput("edit-text", render);
+        } else if (action === "delete") {
+            t = findTask(id);
+            if (window.confirm("Remover \"" + t.text + "\"?")) {
+                act("kt_delete", { p_id: parseInt(id, 10) });
+            }
+        } else if (action === "add-repeat") {
+            state.addRepeat = !state.addRepeat;
+            state.addDays = state.addRepeat ? [state.openDay] : [];
+            keepInput("add-text", render);
+        } else if (action === "add-day") {
+            state.addDays = toggleIn(state.addDays, day);
+            keepInput("add-text", render);
+        }
+    };
+
+    // Re-renderizar apaga o que foi digitado; isto preserva o texto
+    function keepInput(inputId, fn) {
+        var input = document.getElementById(inputId);
+        var value = input ? input.value : "";
+        fn();
+        input = document.getElementById(inputId);
+        if (input) {
+            input.value = value;
+        }
+    }
+
+    app.onsubmit = function (e) {
+        e = e || window.event;
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        var form = e.target || e.srcElement;
+        var kind = form.getAttribute("data-form");
+        var text;
+        if (kind === "add") {
+            text = document.getElementById("add-text").value.replace(/^\s+|\s+$/g, "");
+            if (!text) {
+                return false;
+            }
+            var days = state.addRepeat ? state.addDays : null;
+            state.addRepeat = false;
+            state.addDays = [];
+            act("kt_add", {
+                p_text: text,
+                p_day: state.openDay,
+                p_days: days
+            });
+        } else if (kind === "edit") {
+            text = document.getElementById("edit-text").value.replace(/^\s+|\s+$/g, "");
+            if (!text) {
+                return false;
+            }
+            state.editingId = null;
+            act("kt_update", {
+                p_id: parseInt(form.getAttribute("data-id"), 10),
+                p_text: text,
+                p_day: state.openDay,
+                p_days: state.editDays
+            });
+        }
+        return false;
+    };
+
+    state.token = DEMO ? (getToken() || "demo") : getToken();
+    if (state.token) {
+        load();
+    } else {
+        render();
+    }
+</script>
+</body>
+</html>
