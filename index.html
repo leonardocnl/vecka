@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Vecka">
 <title>Vecka</title>
+<link rel="icon" type="image/png" href="icon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
     @font-face {
         font-family: "Space Mono";
@@ -30,12 +32,21 @@
         box-sizing: border-box;
         -webkit-box-sizing: border-box;
     }
+
+    /* ===== Cores =====
+       Tema claro (padrão) e escuro. Sem variáveis CSS para manter
+       compatibilidade com navegadores antigos: o tema escuro reescreve as cores. */
     html, body {
         margin: 0;
         padding: 0;
-        background: #fff;
-        color: #000;
+        background-color: #e3e2de;
+        color: #1e1e1e;
         font-family: "IBM Plex Sans", Helvetica, Arial, sans-serif;
+    }
+    body {
+        /* Textura de papel: ruído leve sobreposto à cor de fundo */
+        background-image: url("paper.png");
+        min-height: 100vh;
     }
     #app {
         max-width: 720px;
@@ -44,16 +55,17 @@
     .topbar {
         display: table;
         width: 100%;
-        padding: 16px 24px 0 24px;
+        padding: 20px 24px 0 24px;
     }
     .brand, .top-actions {
         display: table-cell;
         vertical-align: middle;
     }
-    .brand img {
+    .brand svg {
         display: block;
-        width: 96px;
-        height: 32px;
+        width: 132px;
+        height: 44px;
+        fill: #1e1e1e;
     }
     .top-actions {
         text-align: right;
@@ -61,7 +73,7 @@
     .link {
         background: none;
         border: none;
-        color: #555;
+        color: #5e5e5e;
         font-size: 18px;
         padding: 12px 8px;
         min-height: 48px;
@@ -69,7 +81,7 @@
         font-family: inherit;
     }
     .day {
-        border-bottom: 1px solid #888;
+        border-bottom: 1px solid #a8a7a3;
         padding: 0 24px;
     }
     .day-head {
@@ -82,22 +94,22 @@
         font-family: "Space Mono", "Courier New", monospace;
         font-size: 44px;
         font-weight: bold;
-        color: #222;
+        color: #2a2a2a;
     }
     .open .day-head {
         padding-bottom: 4px;
         font-size: 52px;
-        color: #000;
+        color: #1e1e1e;
     }
     .date {
-        color: #444;
+        color: #5e5e5e;
         font-size: 20px;
         margin-bottom: 20px;
     }
     .count {
         font-size: 20px;
         font-weight: normal;
-        color: #666;
+        color: #5e5e5e;
         letter-spacing: 0;
         font-family: "IBM Plex Sans", Helvetica, Arial, sans-serif;
     }
@@ -122,35 +134,43 @@
         display: inline-block;
         width: 26px;
         height: 26px;
-        border: 2px solid #000;
+        border: 2px solid #1e1e1e;
         margin-right: 12px;
         vertical-align: middle;
         text-align: center;
         line-height: 22px;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: bold;
     }
+    /* Cor de destaque: caixa marcada e risco da tarefa concluída */
     .done .box {
-        background: #000;
+        background: #cf1020;
+        border-color: #cf1020;
         color: #fff;
     }
     .done .label {
         text-decoration: line-through;
-        color: #777;
+        -webkit-text-decoration-color: #cf1020;
+        text-decoration-color: #cf1020;
+        color: #7a7a7a;
     }
     .rec {
-        color: #666;
+        color: #5e5e5e;
         font-size: 18px;
         margin-left: 6px;
     }
     .small {
         background: none;
         border: none;
-        color: #666;
+        color: #5e5e5e;
         font-size: 17px;
         min-width: 48px;
         min-height: 48px;
         font-family: inherit;
+    }
+    .more {
+        font-size: 22px;
+        letter-spacing: 1px;
     }
     .add {
         margin: 12px 0 28px 0;
@@ -158,12 +178,12 @@
     .add input[type=text], .edit input[type=text] {
         width: 100%;
         border: none;
-        border-bottom: 1px solid #999;
+        border-bottom: 1px solid #8e8d89;
         font-size: 22px;
         padding: 12px 0;
         font-family: inherit;
         background: transparent;
-        color: #000;
+        color: #1e1e1e;
         border-radius: 0;
         -webkit-appearance: none;
     }
@@ -174,27 +194,27 @@
         display: inline-block;
         width: 48px;
         height: 48px;
-        border: 2px solid #000;
-        background: #fff;
-        color: #000;
+        border: 2px solid #1e1e1e;
+        background: transparent;
+        color: #1e1e1e;
         font-size: 18px;
         font-weight: bold;
         margin: 0 4px 6px 0;
         font-family: inherit;
     }
     .wd.on {
-        background: #000;
-        color: #fff;
+        background: #1e1e1e;
+        color: #e3e2de;
     }
     .hint {
         font-size: 16px;
-        color: #666;
+        color: #5e5e5e;
         margin: 6px 0;
     }
     .btn {
-        border: 2px solid #000;
-        background: #000;
-        color: #fff;
+        border: 2px solid #1e1e1e;
+        background: #1e1e1e;
+        color: #e3e2de;
         font-size: 18px;
         padding: 0 18px;
         min-height: 48px;
@@ -202,8 +222,8 @@
         font-family: inherit;
     }
     .btn.alt {
-        background: #fff;
-        color: #000;
+        background: transparent;
+        color: #1e1e1e;
     }
     .edit {
         padding: 8px 0 16px 0;
@@ -215,7 +235,59 @@
     .status {
         padding: 8px 24px;
         font-size: 16px;
-        color: #666;
+        color: #5e5e5e;
+    }
+
+    /* ===== Tema escuro ===== */
+    html.dark, html.dark body {
+        background-color: #2f2f2f;
+        color: #e4e3df;
+    }
+    .dark .brand svg {
+        fill: #e4e3df;
+    }
+    .dark .link, .dark .date, .dark .count, .dark .rec,
+    .dark .small, .dark .hint, .dark .status {
+        color: #a3a29e;
+    }
+    .dark .day {
+        border-bottom-color: #555;
+    }
+    .dark .day-head {
+        color: #d6d5d1;
+    }
+    .dark .open .day-head {
+        color: #f0efeb;
+    }
+    .dark .box {
+        border-color: #e4e3df;
+    }
+    .dark .done .box {
+        border-color: #cf1020;
+    }
+    .dark .done .label {
+        color: #8a8985;
+    }
+    .dark .add input[type=text], .dark .edit input[type=text] {
+        color: #e4e3df;
+        border-bottom-color: #6a6966;
+    }
+    .dark .wd {
+        border-color: #e4e3df;
+        color: #e4e3df;
+    }
+    .dark .wd.on {
+        background: #e4e3df;
+        color: #2f2f2f;
+    }
+    .dark .btn {
+        border-color: #e4e3df;
+        background: #e4e3df;
+        color: #2f2f2f;
+    }
+    .dark .btn.alt {
+        background: transparent;
+        color: #e4e3df;
     }
 </style>
 </head>
@@ -245,8 +317,45 @@
         addRepeat: false,
         addDays: [],
         loading: false,
-        error: null
+        error: null,
+        actionsId: null
     };
+
+    // ---------- tema ----------
+    // Usa a escolha salva no aparelho; se não houver, segue o tema do sistema.
+
+    function isDark() {
+        return /(^|\s)dark(\s|$)/.test(document.documentElement.className);
+    }
+
+    function setTheme(theme, save) {
+        document.documentElement.className = theme === "dark" ? "dark" : "";
+        if (save) {
+            try {
+                window.localStorage.setItem("vecka-theme", theme);
+            } catch (e) {
+                // sem localStorage: vale até recarregar
+            }
+        }
+    }
+
+    function initTheme() {
+        var saved = null;
+        try {
+            saved = window.localStorage.getItem("vecka-theme");
+        } catch (e) {
+            saved = null;
+        }
+        if (saved) {
+            setTheme(saved, false);
+            return;
+        }
+        var prefersDark = window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setTheme(prefersDark ? "dark" : "light", false);
+    }
+
+    initTheme();
 
     var app = document.getElementById("app");
 
@@ -491,6 +600,19 @@
 
     // ---------- interface ----------
 
+    // "29 de outubro de 2026 — 17:05" (a hora só aparece no dia de hoje)
+    function dateLine(d, isToday) {
+        var s = d.getDate() + " de " + MONTHS[d.getMonth()] + " de " + d.getFullYear();
+        if (isToday) {
+            var now = new Date();
+            s += " — " + pad(now.getHours()) + ":" + pad(now.getMinutes());
+        }
+        return s;
+    }
+
+    var WORDMARK = '<svg viewBox="0 0 433 144" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vecka">' +
+        '<path fill-rule="evenodd" clip-rule="evenodd" d="M283.216 80.9404H286.465L325.857 42H353.677L303.115 90.4746L338.491 125.605L366.5 42H399.5L433 142H411L384.613 57.0176H381.387L355 142H327.685L286.465 100.414H283.216V142H262.301V127.754C258.562 132.294 253.88 136.031 248.252 138.962C241.545 142.321 233.429 144 223.905 144C214.382 144 205.729 141.985 197.949 137.954C190.303 133.923 184.2 128.078 179.64 120.42C175.834 113.836 173.667 106.111 173.133 97.2441H102.46C102.73 105.977 105.632 112.963 111.166 118.203C116.835 123.309 123.855 125.861 132.224 125.861C140.053 125.861 145.925 124.115 149.84 120.622C153.889 117.129 156.994 113.097 159.153 108.529L176.364 117.397C174.474 121.159 171.707 125.123 168.062 129.288C164.553 133.453 159.896 136.946 154.092 139.768C148.287 142.589 140.863 144 131.819 144C121.695 144 112.853 141.917 105.294 137.752C97.7349 133.453 91.796 127.474 87.4766 119.815C83.964 113.274 81.9254 105.881 81.3613 97.6357L66.5 142H33.5L0 42H22L48.3867 126.982H51.6133L78 42H100L96.9297 51.1631C99.3359 48.9819 101.989 47.0766 104.89 45.4492C112.449 41.1499 121.155 39 131.009 39C140.593 39 148.962 41.1499 156.116 45.4492C163.405 49.6143 169.075 55.4585 173.125 62.9824C174.338 65.2367 175.368 67.6064 176.218 70.0898C177.154 67.5048 178.294 65.0683 179.64 62.7812C184.2 55.1231 190.304 49.2787 197.949 45.248C205.729 41.083 214.382 39 223.905 39C233.429 39 241.545 40.747 248.252 44.2402C253.879 47.1714 258.562 50.907 262.301 55.4463V0H283.216V80.9404ZM224.308 57.541C218.54 57.541 213.308 58.8852 208.613 61.5723C204.053 64.125 200.431 67.8873 197.748 72.8584C195.066 77.6951 193.725 83.6066 193.725 90.5928V92.4072C193.725 99.3936 195.065 105.373 197.748 110.344C200.431 115.315 204.053 119.077 208.613 121.63C213.308 124.183 218.54 125.459 224.308 125.459C233.027 125.459 239.667 123.241 244.228 118.808C248.788 114.24 251.672 108.462 252.879 101.476L262.301 103.646V79.415L252.275 81.5244C251.605 77.0906 250.196 73.0593 248.05 69.4316C245.904 65.8042 242.886 62.9153 238.996 60.7656C235.106 58.6159 230.21 57.541 224.308 57.541ZM130.807 57.3398C122.977 57.3398 116.566 59.4896 111.571 63.7891C106.712 67.9541 103.742 73.7984 102.662 81.3223H157.938C157.398 73.7985 154.699 67.9541 149.84 63.7891C144.98 59.4896 138.636 57.3398 130.807 57.3398Z"/></svg>';
+
     function weekdayButtons(selected, action) {
         var h = '<div class="weekdays">';
         for (var d = 0; d < 7; d++) {
@@ -518,8 +640,10 @@
             (t.recurring_days ? '<span class="rec">↻</span>' : "") +
             "</div>" +
             '<div class="task-actions">' +
-            '<button type="button" class="small" data-action="edit" data-id="' + t.id + '">editar</button>' +
-            '<button type="button" class="small" data-action="delete" data-id="' + t.id + '">✕</button>' +
+            (state.actionsId == t.id ?
+                '<button type="button" class="small" data-action="edit" data-id="' + t.id + '">editar</button>' +
+                '<button type="button" class="small" data-action="delete" data-id="' + t.id + '">✕</button>' : "") +
+            '<button type="button" class="small more" data-action="more" data-id="' + t.id + '">…</button>' +
             "</div></div>";
     }
 
@@ -543,8 +667,7 @@
         }
         var d = dateOfDay(dow);
         h += '<div class="day-head">' + DAY_NAMES[dow] + "</div>";
-        h += '<div class="date">' + d.getDate() + " de " + MONTHS[d.getMonth()] +
-            (dow === state.todayDow ? " — hoje" : "") + "</div>";
+        h += '<div class="date" id="date-line">' + dateLine(d, dow === state.todayDow) + "</div>";
         for (var i = 0; i < list.length; i++) {
             h += renderTask(list[i], dow);
         }
@@ -573,8 +696,9 @@
             return;
         }
         var h = '<div class="topbar">' +
-            '<div class="brand"><img src="wordmark.svg" alt="Vecka" width="96" height="32"></div>' +
+            '<div class="brand">' + WORDMARK + "</div>" +
             '<div class="top-actions">' +
+            '<button type="button" class="link" data-action="theme">' + (isDark() ? "claro" : "escuro") + "</button>" +
             '<button type="button" class="link" data-action="refresh">atualizar</button></div></div>';
         if (state.loading || state.error || DEMO) {
             h += '<div class="status">' +
@@ -611,6 +735,12 @@
 
         if (action === "refresh") {
             load();
+        } else if (action === "theme") {
+            setTheme(isDark() ? "light" : "dark", true);
+            render();
+        } else if (action === "more") {
+            state.actionsId = state.actionsId == id ? null : id;
+            render();
         } else if (action === "open") {
             state.openDay = day;
             state.editingId = null;
@@ -622,6 +752,7 @@
         } else if (action === "edit") {
             t = findTask(id);
             state.editingId = t.id;
+            state.actionsId = null;
             state.editDays = t.recurring_days ? t.recurring_days.slice(0) : [];
             render();
         } else if (action === "cancel-edit") {
@@ -692,6 +823,14 @@
         }
         return false;
     };
+
+    // Atualiza só a linha da data a cada minuto (evita redesenhar a tela toda no e-ink)
+    setInterval(function () {
+        var el = document.getElementById("date-line");
+        if (el && state.weekStart !== null) {
+            el.innerHTML = dateLine(dateOfDay(state.openDay), state.openDay === state.todayDow);
+        }
+    }, 60000);
 
     state.token = DEMO ? (getToken() || "demo") : getToken();
     if (state.token) {
