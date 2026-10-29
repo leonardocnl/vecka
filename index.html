@@ -42,8 +42,21 @@
         margin: 0 auto;
     }
     .topbar {
+        display: table;
+        width: 100%;
+        padding: 16px 24px 0 24px;
+    }
+    .brand, .top-actions {
+        display: table-cell;
+        vertical-align: middle;
+    }
+    .brand img {
+        display: block;
+        width: 96px;
+        height: 32px;
+    }
+    .top-actions {
         text-align: right;
-        padding: 12px 24px 0 24px;
     }
     .link {
         background: none;
@@ -560,7 +573,9 @@
             return;
         }
         var h = '<div class="topbar">' +
-            '<button type="button" class="link" data-action="refresh">atualizar</button></div>';
+            '<div class="brand"><img src="wordmark.svg" alt="Vecka" width="96" height="32"></div>' +
+            '<div class="top-actions">' +
+            '<button type="button" class="link" data-action="refresh">atualizar</button></div></div>';
         if (state.loading || state.error || DEMO) {
             h += '<div class="status">' +
                 (state.error ? escapeHtml(state.error) : state.loading ? "Salvando..." : "Modo demonstração (sem servidor)") +
