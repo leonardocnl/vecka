@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Vecka">
@@ -366,9 +366,6 @@
     }
 
     /* ===== Calendário ===== */
-    .cal-band .day-head .count {
-        margin-left: 16px;
-    }
     .back-nav {
         padding: 8px 24px 0 24px;
     }
@@ -387,10 +384,29 @@
         vertical-align: middle;
         padding: 24px 0;
     }
+    /* Barra de meses presa ao fundo da tela: não se mexe ao trocar de mês.
+       A segunda linha de padding soma a área segura do iPhone (barra de gestos);
+       navegadores antigos ignoram e ficam com a primeira. */
+    .cal-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 16px 24px 32px 24px;
+        padding-bottom: calc(32px + env(safe-area-inset-bottom));
+        background-color: #e3e2de;
+        background-image: url("paper.png");
+    }
     .cal-head {
         display: table;
         width: 100%;
-        margin-top: 24px;
+        max-width: 672px;
+        margin: 0 auto;
+    }
+    /* Linhas vazias para o mês ter sempre 6 semanas: a grade não muda de altura */
+    .cal-pad {
+        display: block;
+        height: 58px;
     }
     .cal-cell, .cal-title {
         display: table-cell;
@@ -477,6 +493,13 @@
         .cal-day {
             height: 48px;
             font-size: 18px;
+        }
+        .cal-pad {
+            height: 48px;
+        }
+        .cal-bar {
+            padding-left: 16px;
+            padding-right: 16px;
         }
     }
 
@@ -604,6 +627,9 @@
     }
     .dark .toast-btn {
         color: #2f2f2f;
+    }
+    .dark .cal-bar {
+        background-color: #2f2f2f;
     }
     .dark .cal-title {
         color: #f0efeb;
@@ -1226,7 +1252,7 @@
     function renderCalBand() {
         return '<section class="day cal-band">' +
             '<h2 class="day-title"><button type="button" class="day-head" id="cal-open" data-action="calendar">' +
-            'CALENDÁRIO<span class="count" aria-hidden="true">→</span></button></h2></section>';
+            "CALENDÁRIO</button></h2></section>";
     }
 
     function renderCalendar() {
@@ -1265,19 +1291,26 @@
                 col = 0;
             }
         }
+        var rows = Math.ceil((first.getDay() + daysInMonth) / 7);
         while (col > 0 && col < 7) {
             h += "<td></td>";
             col++;
         }
+        for (; rows < 6; rows++) {
+            h += "</tr><tr>";
+            for (var c = 0; c < 7; c++) {
+                h += '<td><span class="cal-pad"></span></td>';
+            }
+        }
         // Navegação embaixo da grade, perto do polegar
-        h += "</tr></tbody></table>" +
-            '<div class="cal-head">' +
+        h += "</tr></tbody></table></div></section>" +
+            '<div class="cal-bar" id="cal-bar"><div class="cal-head">' +
             '<span class="cal-cell"><button type="button" class="cal-arrow" id="cal-prev" data-action="cal-prev"' +
             ' aria-label="Mês anterior"' + (atCurrent ? " disabled" : "") + ">‹</button></span>" +
             '<h2 class="cal-title" id="cal-title" tabindex="-1" aria-live="polite">' + MONTHS[m].toUpperCase() + " " + y + "</h2>" +
             '<span class="cal-cell right"><button type="button" class="cal-arrow" id="cal-next" data-action="cal-next"' +
             ' aria-label="Próximo mês">›</button></span>' +
-            "</div></div></section>";
+            "</div></div>";
         return h;
     }
 
@@ -1290,7 +1323,9 @@
         cal.style.height = "";
         var zoom = FONT_STEPS[state.fontStep];
         var top = cal.getBoundingClientRect().top + (window.pageYOffset || 0);
-        var free = window.innerHeight / zoom - top / zoom - 24;
+        var bar = document.getElementById("cal-bar");
+        var barHeight = bar ? bar.offsetHeight : 0;
+        var free = window.innerHeight / zoom - top / zoom - barHeight;
         if (free > cal.offsetHeight) {
             cal.style.height = free + "px";
         }
