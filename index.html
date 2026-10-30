@@ -35,7 +35,12 @@
 
     /* ===== Cores =====
        Tema claro (padrão) e escuro. Sem variáveis CSS para manter
-       compatibilidade com navegadores antigos: o tema escuro reescreve as cores. */
+       compatibilidade com navegadores antigos: o tema escuro reescreve as cores.
+       Todos os textos têm contraste de pelo menos 4,5:1 com o fundo (WCAG AA). */
+    html {
+        /* Impede o navegador de "corrigir" a rolagem sozinho quando um dia abre */
+        overflow-anchor: none;
+    }
     html, body {
         margin: 0;
         padding: 0;
@@ -51,7 +56,37 @@
     #app {
         max-width: 720px;
         margin: 0 auto;
+        padding-bottom: 80px;
     }
+
+    /* Texto só para leitores de tela (invisível na tela) */
+    .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* ===== Foco visível (navegação por teclado) =====
+       A segunda regra esconde o contorno quando o foco veio de toque ou clique
+       (navegadores antigos ignoram essa regra e mostram sempre, o que é seguro). */
+    button:focus {
+        outline: 3px solid #cf1020;
+        outline-offset: 2px;
+    }
+    button:focus:not(:focus-visible) {
+        outline: none;
+    }
+    h2:focus {
+        outline: none;
+    }
+
+    /* ===== Topo ===== */
     .topbar {
         display: table;
         width: 100%;
@@ -73,20 +108,57 @@
     .link {
         background: none;
         border: none;
-        color: #5e5e5e;
+        color: #4f4e4b;
         font-size: 18px;
         padding: 12px 8px;
         min-height: 48px;
+        min-width: 44px;
         text-decoration: underline;
         font-family: inherit;
     }
+    .link:disabled {
+        opacity: 0.35;
+        text-decoration: none;
+    }
+    /* Celular: topo mais compacto para tudo caber numa linha */
+    @media (max-width: 480px) {
+        .topbar {
+            padding: 16px 16px 0 24px;
+        }
+        .brand svg {
+            width: 105px;
+            height: 35px;
+        }
+        .link {
+            font-size: 16px;
+            padding: 12px 5px;
+            min-width: 36px;
+        }
+    }
+    .status {
+        padding: 4px 24px 0 24px;
+        font-size: 16px;
+        color: #4f4e4b;
+        min-height: 4px;
+    }
+    .status.error {
+        color: #a50d1a;
+        font-weight: bold;
+    }
+
+    /* ===== Dias ===== */
     .day {
         border-bottom: 1px solid #a8a7a3;
         padding: 0 24px;
     }
+    .day-title {
+        margin: 0;
+        font-size: inherit;
+    }
     .day-head {
         display: block;
         width: 100%;
+        margin: 0;
         background: none;
         border: none;
         text-align: left;
@@ -94,41 +166,61 @@
         font-family: "Space Mono", "Courier New", monospace;
         font-size: 44px;
         font-weight: bold;
-        color: #2a2a2a;
+        /* Dias recolhidos ficam mais apagados: o dia aberto fica "em foco" */
+        color: #5c5b58;
     }
     .open .day-head {
         padding-bottom: 4px;
         font-size: 52px;
         color: #1e1e1e;
     }
-    .date {
-        color: #5e5e5e;
-        font-size: 20px;
-        margin-bottom: 20px;
-    }
-    .count {
+    .count, .tag {
+        font-family: "IBM Plex Sans", Helvetica, Arial, sans-serif;
         font-size: 20px;
         font-weight: normal;
-        color: #5e5e5e;
+        color: #4f4e4b;
         letter-spacing: 0;
-        font-family: "IBM Plex Sans", Helvetica, Arial, sans-serif;
+        margin-left: 12px;
     }
+    .date {
+        color: #4f4e4b;
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+    .empty {
+        margin: 8px 0 4px 0;
+        font-size: 20px;
+        color: #4f4e4b;
+    }
+
+    /* ===== Tarefas ===== */
     .task {
         display: table;
         width: 100%;
         min-height: 52px;
     }
-    .task-main, .task-actions {
+    .task-cell, .task-actions {
         display: table-cell;
         vertical-align: middle;
     }
     .task-main {
-        padding: 6px 0;
+        display: block;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 10px 0;
+        font-family: inherit;
         font-size: 22px;
+        color: inherit;
+        line-height: 1.3;
     }
     .task-actions {
         width: 1%;
         white-space: nowrap;
+    }
+    .temp {
+        opacity: 0.6;
     }
     .box {
         display: inline-block;
@@ -136,7 +228,7 @@
         height: 26px;
         border: 2px solid #1e1e1e;
         margin-right: 12px;
-        vertical-align: middle;
+        vertical-align: -4px;
         text-align: center;
         line-height: 22px;
         font-size: 18px;
@@ -152,17 +244,17 @@
         text-decoration: line-through;
         -webkit-text-decoration-color: #cf1020;
         text-decoration-color: #cf1020;
-        color: #7a7a7a;
+        color: #575653;
     }
     .rec {
-        color: #5e5e5e;
+        color: #4f4e4b;
         font-size: 18px;
         margin-left: 6px;
     }
     .small {
         background: none;
         border: none;
-        color: #5e5e5e;
+        color: #4f4e4b;
         font-size: 17px;
         min-width: 48px;
         min-height: 48px;
@@ -172,20 +264,38 @@
         font-size: 22px;
         letter-spacing: 1px;
     }
+
+    /* ===== Formulários ===== */
     .add {
         margin: 12px 0 28px 0;
     }
     .add input[type=text], .edit input[type=text] {
         width: 100%;
         border: none;
-        border-bottom: 1px solid #8e8d89;
+        border-bottom: 2px solid #8e8d89;
         font-size: 22px;
         padding: 12px 0;
         font-family: inherit;
         background: transparent;
         color: #1e1e1e;
         border-radius: 0;
+        outline: none;
         -webkit-appearance: none;
+    }
+    .add input[type=text]:focus, .edit input[type=text]:focus {
+        border-bottom-color: #cf1020;
+    }
+    /* Uma regra por navegador: se ficassem juntas, um navegador que não
+       entende uma delas ignoraria todas */
+    input::-webkit-input-placeholder {
+        color: #5c5b58;
+    }
+    input::-moz-placeholder {
+        color: #5c5b58;
+        opacity: 1;
+    }
+    input::placeholder {
+        color: #5c5b58;
     }
     .weekdays {
         margin-top: 10px;
@@ -208,8 +318,8 @@
     }
     .hint {
         font-size: 16px;
-        color: #5e5e5e;
-        margin: 6px 0;
+        color: #4f4e4b;
+        margin: 10px 0 6px 0;
     }
     .btn {
         border: 2px solid #1e1e1e;
@@ -225,6 +335,10 @@
         background: transparent;
         color: #1e1e1e;
     }
+    .btn.alt.on {
+        background: #1e1e1e;
+        color: #e3e2de;
+    }
     .edit {
         padding: 8px 0 16px 0;
     }
@@ -232,10 +346,47 @@
         padding: 40px 24px;
         font-size: 22px;
     }
-    .status {
-        padding: 8px 24px;
-        font-size: 16px;
-        color: #5e5e5e;
+
+    /* ===== Aviso "desfazer" ===== */
+    .toast {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: none;
+        background: #1e1e1e;
+        color: #e3e2de;
+        padding: 4px 24px;
+        font-size: 18px;
+    }
+    .toast.show {
+        display: block;
+    }
+    .toast-inner {
+        display: table;
+        width: 100%;
+        max-width: 672px;
+        margin: 0 auto;
+    }
+    .toast-text, .toast-act {
+        display: table-cell;
+        vertical-align: middle;
+    }
+    .toast-act {
+        text-align: right;
+        width: 1%;
+        white-space: nowrap;
+    }
+    .toast-btn {
+        background: none;
+        border: none;
+        color: #e3e2de;
+        font-size: 18px;
+        font-weight: bold;
+        text-decoration: underline;
+        min-height: 48px;
+        padding: 0 0 0 16px;
+        font-family: inherit;
     }
 
     /* ===== Tema escuro ===== */
@@ -243,18 +394,27 @@
         background-color: #2f2f2f;
         color: #e4e3df;
     }
+    .dark button:focus {
+        outline-color: #ff6b73;
+    }
+    .dark button:focus:not(:focus-visible) {
+        outline: none;
+    }
     .dark .brand svg {
         fill: #e4e3df;
     }
-    .dark .link, .dark .date, .dark .count, .dark .rec,
-    .dark .small, .dark .hint, .dark .status {
-        color: #a3a29e;
+    .dark .link, .dark .date, .dark .count, .dark .tag, .dark .rec,
+    .dark .small, .dark .hint, .dark .status, .dark .empty {
+        color: #b3b2ae;
+    }
+    .dark .status.error {
+        color: #ff8a90;
     }
     .dark .day {
         border-bottom-color: #555;
     }
     .dark .day-head {
-        color: #d6d5d1;
+        color: #a9a8a4;
     }
     .dark .open .day-head {
         color: #f0efeb;
@@ -266,11 +426,23 @@
         border-color: #cf1020;
     }
     .dark .done .label {
-        color: #8a8985;
+        color: #a3a29e;
     }
     .dark .add input[type=text], .dark .edit input[type=text] {
         color: #e4e3df;
-        border-bottom-color: #6a6966;
+        border-bottom-color: #7a7976;
+    }
+    .dark .add input[type=text]:focus, .dark .edit input[type=text]:focus {
+        border-bottom-color: #ff6b73;
+    }
+    .dark input::-webkit-input-placeholder {
+        color: #a9a8a4;
+    }
+    .dark input::-moz-placeholder {
+        color: #a9a8a4;
+    }
+    .dark input::placeholder {
+        color: #a9a8a4;
     }
     .dark .wd {
         border-color: #e4e3df;
@@ -289,10 +461,22 @@
         background: transparent;
         color: #e4e3df;
     }
+    .dark .btn.alt.on {
+        background: #e4e3df;
+        color: #2f2f2f;
+    }
+    .dark .toast {
+        background: #e4e3df;
+        color: #2f2f2f;
+    }
+    .dark .toast-btn {
+        color: #2f2f2f;
+    }
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script>
     // ===== Configuração (preencher com os dados do seu projeto Supabase) =====
     var SUPABASE_URL = "COLE_AQUI_A_URL_DO_PROJETO";
@@ -301,63 +485,35 @@
 
     var DAY_NAMES = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
     var DAY_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
+    var DAY_FULL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
     var MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
         "agosto", "setembro", "outubro", "novembro", "dezembro"];
+    var FONT_STEPS = [0.85, 1, 1.15, 1.3];
+    var UNDO_MS = 6000;
 
     var DEMO = SUPABASE_URL.indexOf("http") !== 0;
 
+    var WORDMARK = '<svg viewBox="0 0 433 144" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vecka">' +
+        '<path fill-rule="evenodd" clip-rule="evenodd" d="M283.216 80.9404H286.465L325.857 42H353.677L303.115 90.4746L338.491 125.605L366.5 42H399.5L433 142H411L384.613 57.0176H381.387L355 142H327.685L286.465 100.414H283.216V142H262.301V127.754C258.562 132.294 253.88 136.031 248.252 138.962C241.545 142.321 233.429 144 223.905 144C214.382 144 205.729 141.985 197.949 137.954C190.303 133.923 184.2 128.078 179.64 120.42C175.834 113.836 173.667 106.111 173.133 97.2441H102.46C102.73 105.977 105.632 112.963 111.166 118.203C116.835 123.309 123.855 125.861 132.224 125.861C140.053 125.861 145.925 124.115 149.84 120.622C153.889 117.129 156.994 113.097 159.153 108.529L176.364 117.397C174.474 121.159 171.707 125.123 168.062 129.288C164.553 133.453 159.896 136.946 154.092 139.768C148.287 142.589 140.863 144 131.819 144C121.695 144 112.853 141.917 105.294 137.752C97.7349 133.453 91.796 127.474 87.4766 119.815C83.964 113.274 81.9254 105.881 81.3613 97.6357L66.5 142H33.5L0 42H22L48.3867 126.982H51.6133L78 42H100L96.9297 51.1631C99.3359 48.9819 101.989 47.0766 104.89 45.4492C112.449 41.1499 121.155 39 131.009 39C140.593 39 148.962 41.1499 156.116 45.4492C163.405 49.6143 169.075 55.4585 173.125 62.9824C174.338 65.2367 175.368 67.6064 176.218 70.0898C177.154 67.5048 178.294 65.0683 179.64 62.7812C184.2 55.1231 190.304 49.2787 197.949 45.248C205.729 41.083 214.382 39 223.905 39C233.429 39 241.545 40.747 248.252 44.2402C253.879 47.1714 258.562 50.907 262.301 55.4463V0H283.216V80.9404ZM224.308 57.541C218.54 57.541 213.308 58.8852 208.613 61.5723C204.053 64.125 200.431 67.8873 197.748 72.8584C195.066 77.6951 193.725 83.6066 193.725 90.5928V92.4072C193.725 99.3936 195.065 105.373 197.748 110.344C200.431 115.315 204.053 119.077 208.613 121.63C213.308 124.183 218.54 125.459 224.308 125.459C233.027 125.459 239.667 123.241 244.228 118.808C248.788 114.24 251.672 108.462 252.879 101.476L262.301 103.646V79.415L252.275 81.5244C251.605 77.0906 250.196 73.0593 248.05 69.4316C245.904 65.8042 242.886 62.9153 238.996 60.7656C235.106 58.6159 230.21 57.541 224.308 57.541ZM130.807 57.3398C122.977 57.3398 116.566 59.4896 111.571 63.7891C106.712 67.9541 103.742 73.7984 102.662 81.3223H157.938C157.398 73.7985 154.699 67.9541 149.84 63.7891C144.98 59.4896 138.636 57.3398 130.807 57.3398Z"/></svg>';
+
     var state = {
         token: null,
-        weekStart: null,
-        todayDow: 0,
-        openDay: 0,
+        today: null,          // "AAAA-MM-DD"; os 7 dias mostrados começam aqui
+        openIdx: 0,           // 0 = hoje, 1 = amanhã ... 6
         tasks: [],
         editingId: null,
         editDays: [],
         addRepeat: false,
         addDays: [],
-        loading: false,
+        actionsId: null,      // tarefa com "editar" e "✕" visíveis
         error: null,
-        actionsId: null
+        fontStep: 1,
+        pendingDelete: null,  // tarefa removida que ainda pode ser desfeita
+        tempSeq: 0            // ids negativos para tarefas ainda não salvas
     };
 
-    // ---------- tema ----------
-    // Usa a escolha salva no aparelho; se não houver, segue o tema do sistema.
-
-    function isDark() {
-        return /(^|\s)dark(\s|$)/.test(document.documentElement.className);
-    }
-
-    function setTheme(theme, save) {
-        document.documentElement.className = theme === "dark" ? "dark" : "";
-        if (save) {
-            try {
-                window.localStorage.setItem("vecka-theme", theme);
-            } catch (e) {
-                // sem localStorage: vale até recarregar
-            }
-        }
-    }
-
-    function initTheme() {
-        var saved = null;
-        try {
-            saved = window.localStorage.getItem("vecka-theme");
-        } catch (e) {
-            saved = null;
-        }
-        if (saved) {
-            setTheme(saved, false);
-            return;
-        }
-        var prefersDark = window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches;
-        setTheme(prefersDark ? "dark" : "light", false);
-    }
-
-    initTheme();
-
     var app = document.getElementById("app");
+    var toast = document.getElementById("toast");
 
     // ---------- utilidades ----------
 
@@ -379,10 +535,10 @@
         return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
     }
 
-    function dateOfDay(dow) {
-        var d = parseDate(state.weekStart);
-        d.setDate(d.getDate() + dow);
-        return d;
+    function dayInfo(idx) {
+        var d = parseDate(state.today);
+        d.setDate(d.getDate() + idx);
+        return { date: d, iso: formatISO(d), dow: d.getDay() };
     }
 
     function escapeHtml(s) {
@@ -422,28 +578,98 @@
         return out;
     }
 
-    function findTask(id) {
+    function indexOfTask(id) {
         for (var i = 0; i < state.tasks.length; i++) {
-            if (state.tasks[i].id == id) {
-                return state.tasks[i];
+            if (state.tasks[i].id === id) {
+                return i;
             }
+        }
+        return -1;
+    }
+
+    function findTask(id) {
+        var i = indexOfTask(id);
+        return i >= 0 ? state.tasks[i] : null;
+    }
+
+    function isDone(t, iso) {
+        return contains(t.done_dates, iso);
+    }
+
+    // Tarefas do dia, com as concluídas no fim da lista
+    function tasksFor(idx) {
+        var info = dayInfo(idx);
+        var todo = [];
+        var done = [];
+        for (var i = 0; i < state.tasks.length; i++) {
+            var t = state.tasks[i];
+            var match = t.recurring_days ? contains(t.recurring_days, info.dow) : t.date === info.iso;
+            if (!match) {
+                continue;
+            }
+            if (isDone(t, info.iso)) {
+                done.push(t);
+            } else {
+                todo.push(t);
+            }
+        }
+        return todo.concat(done);
+    }
+
+    function pendingCount(idx) {
+        var list = tasksFor(idx);
+        var iso = dayInfo(idx).iso;
+        var n = 0;
+        for (var i = 0; i < list.length; i++) {
+            if (!isDone(list[i], iso)) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    // [1, 3, 5] -> "segunda, quarta e sexta"
+    function daysText(days) {
+        if (days.length === 7) {
+            return "todos os dias";
+        }
+        var names = [];
+        for (var i = 0; i < days.length; i++) {
+            names.push(DAY_FULL[days[i]]);
+        }
+        if (names.length === 1) {
+            return names[0];
+        }
+        return names.slice(0, -1).join(", ") + " e " + names[names.length - 1];
+    }
+
+    // "30 de outubro de 2026 — 09:04" (hoje) / "— amanhã" / só a data
+    function dateLine(d, idx) {
+        var s = d.getDate() + " de " + MONTHS[d.getMonth()] + " de " + d.getFullYear();
+        if (idx === 0) {
+            var now = new Date();
+            s += " — " + pad(now.getHours()) + ":" + pad(now.getMinutes());
+        } else if (idx === 1) {
+            s += " — amanhã";
+        }
+        return s;
+    }
+
+    function closest(el, attr, root) {
+        while (el && el !== root) {
+            if (el.getAttribute && el.getAttribute(attr) !== null) {
+                return el;
+            }
+            el = el.parentNode;
         }
         return null;
     }
 
-    function tasksForDay(dow) {
-        var out = [];
-        for (var i = 0; i < state.tasks.length; i++) {
-            var t = state.tasks[i];
-            if (t.recurring_days ? contains(t.recurring_days, dow) : t.day == dow) {
-                out.push(t);
-            }
+    function focusById(id) {
+        var el = id ? document.getElementById(id) : null;
+        if (el && el.focus) {
+            el.focus();
         }
-        return out;
-    }
-
-    function isDone(t, dow) {
-        return contains(t.done_dates, formatISO(dateOfDay(dow)));
     }
 
     // ---------- backend ----------
@@ -471,7 +697,7 @@
                 }
                 cb(null, data);
             } else {
-                cb("Erro " + xhr.status + " ao falar com o servidor");
+                cb("erro " + xhr.status);
             }
         };
         params.p_token = state.token;
@@ -487,7 +713,7 @@
         }
         demoData = { nextId: 1, tasks: [] };
         try {
-            var raw = window.localStorage.getItem("kindle-todo-demo");
+            var raw = window.localStorage.getItem("vecka-demo");
             if (raw) {
                 demoData = JSON.parse(raw);
             }
@@ -498,7 +724,7 @@
 
     function demoSave() {
         try {
-            window.localStorage.setItem("kindle-todo-demo", JSON.stringify(demoData));
+            window.localStorage.setItem("vecka-demo", JSON.stringify(demoData));
         } catch (e) {
             // sem localStorage: continua só em memória
         }
@@ -507,37 +733,52 @@
     function demoRpc(name, p, cb) {
         demoLoad();
         var now = new Date();
-        var ws = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay(), 12, 0, 0);
-        var wsIso = formatISO(ws);
-        var i, t, kept;
+        var today = formatISO(now);
+        var limit = formatISO(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, 12, 0, 0));
+        var i, j, t, kept, dates, visible;
+
         if (name === "kt_list") {
             kept = [];
+            visible = [];
             for (i = 0; i < demoData.tasks.length; i++) {
                 t = demoData.tasks[i];
-                if (t.recurring_days || t.week_start === wsIso) {
+                if (t.recurring_days) {
+                    dates = [];
+                    for (j = 0; j < t.done_dates.length; j++) {
+                        if (t.done_dates[j] >= today) {
+                            dates.push(t.done_dates[j]);
+                        }
+                    }
+                    t.done_dates = dates;
                     kept.push(t);
+                    visible.push(t);
+                } else if (t.date >= today) {
+                    kept.push(t);
+                    if (t.date < limit) {
+                        visible.push(t);
+                    }
                 }
             }
             demoData.tasks = kept;
             demoSave();
-            cb(null, { week_start: wsIso, today_dow: now.getDay(), tasks: demoData.tasks });
+            cb(null, { today: today, tasks: JSON.parse(JSON.stringify(visible)) });
             return;
         }
         if (name === "kt_add") {
-            t = { id: demoData.nextId++, text: p.p_text, done_dates: [] };
+            t = { id: demoData.nextId++, text: p.p_text, date: null, recurring_days: null, done_dates: [] };
             if (p.p_days && p.p_days.length) {
-                t.recurring_days = p.p_days;
-                t.day = null;
+                t.recurring_days = p.p_days.slice(0);
             } else {
-                t.recurring_days = null;
-                t.day = p.p_day;
-                t.week_start = wsIso;
+                t.date = p.p_date;
             }
             demoData.tasks.push(t);
+            demoSave();
+            cb(null, t.id);
+            return;
         }
         for (i = 0; i < demoData.tasks.length; i++) {
             t = demoData.tasks[i];
-            if (t.id != p.p_id) {
+            if (t.id !== p.p_id) {
                 continue;
             }
             if (name === "kt_toggle") {
@@ -545,12 +786,11 @@
             } else if (name === "kt_update") {
                 t.text = p.p_text;
                 if (p.p_days && p.p_days.length) {
-                    t.recurring_days = p.p_days;
-                    t.day = null;
+                    t.recurring_days = p.p_days.slice(0);
+                    t.date = null;
                 } else {
-                    if (t.recurring_days) {
-                        t.day = p.p_day;
-                        t.week_start = wsIso;
+                    if (!t.date) {
+                        t.date = p.p_date;
                     }
                     t.recurring_days = null;
                 }
@@ -563,220 +803,287 @@
         cb(null, null);
     }
 
-    function load() {
-        state.loading = true;
-        render();
+    function load(keepError) {
+        if (state.today === null) {
+            app.innerHTML = '<div class="msg" role="status">Carregando...</div>';
+        }
         rpc("kt_list", {}, function (err, data) {
-            state.loading = false;
             if (err) {
-                state.error = err;
-            } else {
+                state.error = "Sem conexão com o servidor (" + err + "). Toque em atualizar.";
+                if (state.today === null) {
+                    app.innerHTML = '<div class="msg" role="alert">' + escapeHtml(state.error) + "</div>";
+                } else {
+                    updateStatus();
+                }
+                return;
+            }
+            if (!keepError) {
                 state.error = null;
-                var first = state.weekStart === null;
-                state.weekStart = data.week_start;
-                state.todayDow = data.today_dow;
-                state.tasks = data.tasks || [];
-                if (first) {
-                    state.openDay = state.todayDow;
+            }
+            if (state.today !== data.today) {
+                state.openIdx = 0;
+            }
+            state.today = data.today;
+            state.tasks = data.tasks || [];
+            // Uma remoção esperando o "desfazer" não deve reaparecer
+            if (state.pendingDelete) {
+                var i = indexOfTask(state.pendingDelete.task.id);
+                if (i >= 0) {
+                    state.tasks.splice(i, 1);
                 }
             }
             render();
         });
     }
 
-    function act(name, params) {
-        state.loading = true;
-        render();
-        rpc(name, params, function (err) {
+    // Grava no servidor depois que a tela já mudou (atualização otimista).
+    // Se falhar, avisa e recarrega a lista para voltar ao estado real.
+    function sync(name, params, onOk) {
+        rpc(name, params, function (err, data) {
             if (err) {
-                state.loading = false;
-                state.error = err;
-                render();
+                state.error = "Não foi possível salvar a última alteração (" + err + "). A lista foi recarregada.";
+                updateStatus();
+                load(true);
                 return;
             }
-            load();
+            if (state.error) {
+                state.error = null;
+                updateStatus();
+            }
+            if (onOk) {
+                onOk(data);
+            }
         });
+    }
+
+    // ---------- aparência: tema e tamanho da letra ----------
+
+    function isDark() {
+        return /(^|\s)dark(\s|$)/.test(document.documentElement.className);
+    }
+
+    function setTheme(theme, save) {
+        document.documentElement.className = theme === "dark" ? "dark" : "";
+        if (save) {
+            try {
+                window.localStorage.setItem("vecka-theme", theme);
+            } catch (e) {
+                // sem localStorage: vale até recarregar
+            }
+        }
+    }
+
+    function initTheme() {
+        var saved = null;
+        try {
+            saved = window.localStorage.getItem("vecka-theme");
+        } catch (e) {
+            saved = null;
+        }
+        if (saved) {
+            setTheme(saved, false);
+            return;
+        }
+        var prefersDark = window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setTheme(prefersDark ? "dark" : "light", false);
+    }
+
+    function themeLabel() {
+        return isDark() ? "claro" : "escuro";
+    }
+
+    function setFontStep(step, save) {
+        var max = FONT_STEPS.length - 1;
+        if (step < 0) {
+            step = 0;
+        }
+        if (step > max) {
+            step = max;
+        }
+        state.fontStep = step;
+        app.style.zoom = FONT_STEPS[step];
+        var down = document.getElementById("font-down");
+        var up = document.getElementById("font-up");
+        if (down) {
+            down.disabled = step === 0;
+        }
+        if (up) {
+            up.disabled = step === max;
+        }
+        if (save) {
+            try {
+                window.localStorage.setItem("vecka-font-step", String(step));
+            } catch (e) {
+                // sem localStorage: vale até recarregar
+            }
+        }
+    }
+
+    function savedFontStep() {
+        try {
+            var v = parseInt(window.localStorage.getItem("vecka-font-step"), 10);
+            return isNaN(v) ? 1 : v;
+        } catch (e) {
+            return 1;
+        }
     }
 
     // ---------- interface ----------
 
-    // "29 de outubro de 2026 — 17:05" (a hora só aparece no dia de hoje)
-    function dateLine(d, isToday) {
-        var s = d.getDate() + " de " + MONTHS[d.getMonth()] + " de " + d.getFullYear();
-        if (isToday) {
-            var now = new Date();
-            s += " — " + pad(now.getHours()) + ":" + pad(now.getMinutes());
+    function statusHtml() {
+        if (state.error) {
+            return escapeHtml(state.error);
         }
-        return s;
+        return DEMO ? "Modo demonstração (sem servidor)" : "";
     }
 
-    var WORDMARK = '<svg viewBox="0 0 433 144" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vecka">' +
-        '<path fill-rule="evenodd" clip-rule="evenodd" d="M283.216 80.9404H286.465L325.857 42H353.677L303.115 90.4746L338.491 125.605L366.5 42H399.5L433 142H411L384.613 57.0176H381.387L355 142H327.685L286.465 100.414H283.216V142H262.301V127.754C258.562 132.294 253.88 136.031 248.252 138.962C241.545 142.321 233.429 144 223.905 144C214.382 144 205.729 141.985 197.949 137.954C190.303 133.923 184.2 128.078 179.64 120.42C175.834 113.836 173.667 106.111 173.133 97.2441H102.46C102.73 105.977 105.632 112.963 111.166 118.203C116.835 123.309 123.855 125.861 132.224 125.861C140.053 125.861 145.925 124.115 149.84 120.622C153.889 117.129 156.994 113.097 159.153 108.529L176.364 117.397C174.474 121.159 171.707 125.123 168.062 129.288C164.553 133.453 159.896 136.946 154.092 139.768C148.287 142.589 140.863 144 131.819 144C121.695 144 112.853 141.917 105.294 137.752C97.7349 133.453 91.796 127.474 87.4766 119.815C83.964 113.274 81.9254 105.881 81.3613 97.6357L66.5 142H33.5L0 42H22L48.3867 126.982H51.6133L78 42H100L96.9297 51.1631C99.3359 48.9819 101.989 47.0766 104.89 45.4492C112.449 41.1499 121.155 39 131.009 39C140.593 39 148.962 41.1499 156.116 45.4492C163.405 49.6143 169.075 55.4585 173.125 62.9824C174.338 65.2367 175.368 67.6064 176.218 70.0898C177.154 67.5048 178.294 65.0683 179.64 62.7812C184.2 55.1231 190.304 49.2787 197.949 45.248C205.729 41.083 214.382 39 223.905 39C233.429 39 241.545 40.747 248.252 44.2402C253.879 47.1714 258.562 50.907 262.301 55.4463V0H283.216V80.9404ZM224.308 57.541C218.54 57.541 213.308 58.8852 208.613 61.5723C204.053 64.125 200.431 67.8873 197.748 72.8584C195.066 77.6951 193.725 83.6066 193.725 90.5928V92.4072C193.725 99.3936 195.065 105.373 197.748 110.344C200.431 115.315 204.053 119.077 208.613 121.63C213.308 124.183 218.54 125.459 224.308 125.459C233.027 125.459 239.667 123.241 244.228 118.808C248.788 114.24 251.672 108.462 252.879 101.476L262.301 103.646V79.415L252.275 81.5244C251.605 77.0906 250.196 73.0593 248.05 69.4316C245.904 65.8042 242.886 62.9153 238.996 60.7656C235.106 58.6159 230.21 57.541 224.308 57.541ZM130.807 57.3398C122.977 57.3398 116.566 59.4896 111.571 63.7891C106.712 67.9541 103.742 73.7984 102.662 81.3223H157.938C157.398 73.7985 154.699 67.9541 149.84 63.7891C144.98 59.4896 138.636 57.3398 130.807 57.3398Z"/></svg>';
+    function updateStatus() {
+        var el = document.getElementById("status");
+        if (el) {
+            el.className = "status" + (state.error ? " error" : "");
+            el.innerHTML = statusHtml();
+        }
+    }
 
-    function weekdayButtons(selected, action) {
-        var h = '<div class="weekdays">';
+    function weekdayButtons(selected, action, labelId) {
+        var h = '<div class="weekdays" role="group" aria-labelledby="' + labelId + '">';
         for (var d = 0; d < 7; d++) {
-            h += '<button type="button" class="wd' + (contains(selected, d) ? " on" : "") +
-                '" data-action="' + action + '" data-day="' + d + '">' + DAY_SHORT[d] + "</button>";
+            var on = contains(selected, d);
+            h += '<button type="button" class="wd' + (on ? " on" : "") + '" id="' + action + "-" + d +
+                '" data-action="' + action + '" data-day="' + d + '" aria-pressed="' + (on ? "true" : "false") +
+                '" aria-label="' + DAY_FULL[d] + '">' + DAY_SHORT[d] + "</button>";
         }
         return h + "</div>";
     }
 
-    function renderTask(t, dow) {
-        if (state.editingId == t.id) {
+    function renderTask(t, idx) {
+        if (state.editingId === t.id) {
             return '<form class="edit" data-form="edit" data-id="' + t.id + '">' +
-                '<input type="text" id="edit-text" value="' + escapeHtml(t.text) + '">' +
-                '<div class="hint">Repetir nos dias (nenhum = só esta semana):</div>' +
-                weekdayButtons(state.editDays, "edit-day") +
+                '<label class="sr" for="edit-text">Texto da tarefa</label>' +
+                '<input type="text" id="edit-text" value="' + escapeHtml(t.text) + '" autocomplete="off">' +
+                '<div class="hint" id="edit-hint">Repetir nos dias (nenhum = só neste dia):</div>' +
+                weekdayButtons(state.editDays, "edit-day", "edit-hint") +
                 '<button type="submit" class="btn">Salvar</button>' +
                 '<button type="button" class="btn alt" data-action="cancel-edit">Cancelar</button>' +
                 "</form>";
         }
-        var done = isDone(t, dow);
-        return '<div class="task' + (done ? " done" : "") + '">' +
-            '<div class="task-main" data-action="toggle" data-id="' + t.id + '" data-day="' + dow + '">' +
-            '<span class="box">' + (done ? "✓" : "") + "</span>" +
-            '<span class="label">' + escapeHtml(t.text) + "</span>" +
-            (t.recurring_days ? '<span class="rec">↻</span>' : "") +
-            "</div>" +
-            '<div class="task-actions">' +
-            (state.actionsId == t.id ?
-                '<button type="button" class="small" data-action="edit" data-id="' + t.id + '">editar</button>' +
-                '<button type="button" class="small" data-action="delete" data-id="' + t.id + '">✕</button>' : "") +
-            '<button type="button" class="small more" data-action="more" data-id="' + t.id + '">…</button>' +
+        var iso = dayInfo(idx).iso;
+        var done = isDone(t, iso);
+        var label = escapeHtml(t.text);
+        var showActions = state.actionsId === t.id;
+        var h = '<div class="task' + (done ? " done" : "") + (t.id < 0 ? " temp" : "") + '" id="task-' + t.id + '">' +
+            '<div class="task-cell">' +
+            '<button type="button" class="task-main" id="tg-' + t.id + '" role="checkbox" aria-checked="' +
+            (done ? "true" : "false") + '" data-action="toggle" data-id="' + t.id + '" data-idx="' + idx + '">' +
+            '<span class="box" aria-hidden="true">' + (done ? "✓" : "") + "</span>" +
+            '<span class="label">' + label + "</span>";
+        if (t.recurring_days) {
+            var rep = "Repete " + daysText(t.recurring_days);
+            h += '<span class="rec" aria-hidden="true" title="' + rep + '">↻</span>' +
+                '<span class="sr">, ' + rep.toLowerCase() + "</span>";
+        }
+        h += "</button></div>" +
+            '<div class="task-actions">';
+        if (showActions) {
+            h += '<button type="button" class="small" id="ed-' + t.id + '" data-action="edit" data-id="' + t.id +
+                '" aria-label="Editar ' + label + '">editar</button>' +
+                '<button type="button" class="small" id="rm-' + t.id + '" data-action="delete" data-id="' + t.id +
+                '" aria-label="Remover ' + label + '">✕</button>';
+        }
+        h += '<button type="button" class="small more" id="mo-' + t.id + '" data-action="more" data-id="' + t.id +
+            '" aria-expanded="' + (showActions ? "true" : "false") + '" aria-label="Mais ações para ' + label + '">…</button>' +
             "</div></div>";
+        return h;
     }
 
-    function renderDay(dow) {
-        var list = tasksForDay(dow);
-        var open = dow === state.openDay;
-        var h = '<div class="day' + (open ? " open" : "") + '">';
+    function renderDay(idx) {
+        var info = dayInfo(idx);
+        var open = idx === state.openIdx;
+        var name = DAY_NAMES[info.dow];
+        var h = '<section class="day' + (open ? " open" : "") + '" id="day-' + idx + '" aria-labelledby="dh-' + idx + '">';
+
         if (!open) {
-            var pending = 0;
-            for (var j = 0; j < list.length; j++) {
-                if (!isDone(list[j], dow)) {
-                    pending++;
-                }
-            }
-            h += '<button type="button" class="day-head" data-action="open" data-day="' + dow + '">' +
-                DAY_NAMES[dow] +
-                (pending ? ' <span class="count">' + pending + "</span>" : "") +
-                (dow < state.todayDow ? ' <span class="count">· já passou</span>' : "") +
-                "</button></div>";
+            var pending = pendingCount(idx);
+            h += '<h2 class="day-title">' +
+                '<button type="button" class="day-head" id="dh-' + idx + '" data-action="open" data-idx="' + idx +
+                '" aria-expanded="false">' + name +
+                (idx === 0 ? '<span class="tag">hoje</span>' : "") +
+                (pending ? '<span class="count">' + pending + '<span class="sr"> ' +
+                    (pending === 1 ? "tarefa pendente" : "tarefas pendentes") + "</span></span>" : "") +
+                "</button></h2></section>";
             return h;
         }
-        var d = dateOfDay(dow);
-        h += '<div class="day-head">' + DAY_NAMES[dow] + "</div>";
-        h += '<div class="date" id="date-line">' + dateLine(d, dow === state.todayDow) + "</div>";
+
+        var list = tasksFor(idx);
+        h += '<h2 class="day-head" id="dh-' + idx + '" tabindex="-1">' + name + "</h2>" +
+            '<div class="date" id="date-line">' + dateLine(info.date, idx) + "</div>";
+        if (!list.length) {
+            h += '<p class="empty">Nada por aqui.</p>';
+        }
         for (var i = 0; i < list.length; i++) {
-            h += renderTask(list[i], dow);
+            h += renderTask(list[i], idx);
         }
         h += '<form class="add" data-form="add">' +
+            '<label class="sr" for="add-text">Nova tarefa para ' + DAY_FULL[info.dow] + "</label>" +
             '<input type="text" id="add-text" placeholder="Adicionar tarefa..." autocomplete="off">';
         if (state.addRepeat) {
-            h += '<div class="hint">Repetir toda semana nos dias:</div>' +
-                weekdayButtons(state.addDays, "add-day") +
-                '<button type="submit" class="btn">Adicionar</button>' +
-                '<button type="button" class="btn alt" data-action="add-repeat">Não repetir</button>';
-        } else {
-            h += '<button type="submit" class="btn">Adicionar</button>' +
-                '<button type="button" class="btn alt" data-action="add-repeat">↻ Repetir</button>';
+            h += '<div class="hint" id="add-hint">Repetir toda semana nos dias:</div>' +
+                weekdayButtons(state.addDays, "add-day", "add-hint");
         }
-        h += "</form></div>";
+        h += '<button type="submit" class="btn">Adicionar</button>' +
+            '<button type="button" class="btn alt' + (state.addRepeat ? " on" : "") + '" id="repeat-btn"' +
+            ' data-action="add-repeat" aria-pressed="' + (state.addRepeat ? "true" : "false") + '">↻ Repetir</button>' +
+            "</form></section>";
         return h;
     }
 
     function render() {
         if (!state.token) {
-            app.innerHTML = '<div class="msg">Link inválido.</div>';
+            app.innerHTML = '<div class="msg" role="alert">Link inválido.</div>';
             return;
         }
-        if (state.weekStart === null) {
-            app.innerHTML = '<div class="msg">' + (state.error ? escapeHtml(state.error) : "Carregando...") + "</div>";
+        if (state.today === null) {
             return;
         }
-        var h = '<div class="topbar">' +
+        var focusId = document.activeElement ? document.activeElement.id : null;
+        var h = '<header class="topbar">' +
             '<div class="brand">' + WORDMARK + "</div>" +
             '<div class="top-actions">' +
-            '<button type="button" class="link" data-action="theme">' + (isDark() ? "claro" : "escuro") + "</button>" +
-            '<button type="button" class="link" data-action="refresh">atualizar</button></div></div>';
-        if (state.loading || state.error || DEMO) {
-            h += '<div class="status">' +
-                (state.error ? escapeHtml(state.error) : state.loading ? "Salvando..." : "Modo demonstração (sem servidor)") +
-                "</div>";
+            '<button type="button" class="link" id="font-down" data-action="font-down" aria-label="Diminuir letra">A−</button>' +
+            '<button type="button" class="link" id="font-up" data-action="font-up" aria-label="Aumentar letra">A+</button>' +
+            '<button type="button" class="link" id="theme-btn" data-action="theme">' + themeLabel() + "</button>" +
+            '<button type="button" class="link" id="refresh-btn" data-action="refresh">atualizar</button>' +
+            "</div></header>" +
+            '<div id="status" class="status' + (state.error ? " error" : "") + '" role="status" aria-live="polite">' +
+            statusHtml() + "</div>" +
+            "<main>";
+        for (var i = 0; i < 7; i++) {
+            h += renderDay(i);
         }
-        // O dia aberto fica no topo; os demais seguem a ordem da semana a partir dele
-        for (var k = 0; k < 7; k++) {
-            h += renderDay((state.openDay + k) % 7);
-        }
+        h += "</main>";
         app.innerHTML = h;
+        setFontStep(state.fontStep, false);
+        focusById(focusId);
     }
 
-    function closest(el, attr) {
-        while (el && el !== app) {
-            if (el.getAttribute && el.getAttribute(attr) !== null) {
-                return el;
-            }
-            el = el.parentNode;
-        }
-        return null;
-    }
-
-    app.onclick = function (e) {
-        e = e || window.event;
-        var el = closest(e.target || e.srcElement, "data-action");
+    // Redesenha só um dia: no e-ink, mudar menos coisas evita a "piscada" da tela
+    function renderDayOnly(idx) {
+        var el = document.getElementById("day-" + idx);
         if (!el) {
+            render();
             return;
         }
-        var action = el.getAttribute("data-action");
-        var id = el.getAttribute("data-id");
-        var day = parseInt(el.getAttribute("data-day"), 10);
-        var t;
+        var focusId = document.activeElement ? document.activeElement.id : null;
+        el.outerHTML = renderDay(idx);
+        focusById(focusId);
+    }
 
-        if (action === "refresh") {
-            load();
-        } else if (action === "theme") {
-            setTheme(isDark() ? "light" : "dark", true);
-            render();
-        } else if (action === "more") {
-            state.actionsId = state.actionsId == id ? null : id;
-            render();
-        } else if (action === "open") {
-            state.openDay = day;
-            state.editingId = null;
-            state.addRepeat = false;
-            render();
-            window.scrollTo(0, 0);
-        } else if (action === "toggle") {
-            act("kt_toggle", { p_id: parseInt(id, 10), p_date: formatISO(dateOfDay(day)) });
-        } else if (action === "edit") {
-            t = findTask(id);
-            state.editingId = t.id;
-            state.actionsId = null;
-            state.editDays = t.recurring_days ? t.recurring_days.slice(0) : [];
-            render();
-        } else if (action === "cancel-edit") {
-            state.editingId = null;
-            render();
-        } else if (action === "edit-day") {
-            state.editDays = toggleIn(state.editDays, day);
-            keepInput("edit-text", render);
-        } else if (action === "delete") {
-            t = findTask(id);
-            if (window.confirm("Remover \"" + t.text + "\"?")) {
-                act("kt_delete", { p_id: parseInt(id, 10) });
-            }
-        } else if (action === "add-repeat") {
-            state.addRepeat = !state.addRepeat;
-            state.addDays = state.addRepeat ? [state.openDay] : [];
-            keepInput("add-text", render);
-        } else if (action === "add-day") {
-            state.addDays = toggleIn(state.addDays, day);
-            keepInput("add-text", render);
-        }
-    };
+    function rerenderOpen() {
+        renderDayOnly(state.openIdx);
+    }
 
-    // Re-renderizar apaga o que foi digitado; isto preserva o texto
+    // Mantém o texto digitado quando a tela é redesenhada
     function keepInput(inputId, fn) {
         var input = document.getElementById(inputId);
         var value = input ? input.value : "";
@@ -787,6 +1094,251 @@
         }
     }
 
+    // ---------- ações ----------
+
+    // Abre o dia no próprio lugar: o nome tocado fica parado sob o dedo
+    function openDay(idx, btn) {
+        var before = btn.getBoundingClientRect().top;
+        var old = state.openIdx;
+        state.openIdx = idx;
+        state.editingId = null;
+        state.actionsId = null;
+        state.addRepeat = false;
+        state.addDays = [];
+        renderDayOnly(old);
+        renderDayOnly(idx);
+        var head = document.getElementById("dh-" + idx);
+        if (head) {
+            window.scrollBy(0, head.getBoundingClientRect().top - before);
+            head.focus();
+        }
+    }
+
+    function toggleTask(id, idx) {
+        var t = findTask(id);
+        if (!t || id < 0) {
+            return;
+        }
+        var iso = dayInfo(idx).iso;
+        t.done_dates = toggleIn(t.done_dates || [], iso);
+        renderDayOnly(idx);
+        sync("kt_toggle", { p_id: id, p_date: iso });
+    }
+
+    // Troca o id provisório pelo id do servidor sem redesenhar a tela
+    function replaceTempId(task, newId) {
+        var oldId = task.id;
+        task.id = newId;
+        var row = document.getElementById("task-" + oldId);
+        if (!row) {
+            return;
+        }
+        row.id = "task-" + newId;
+        row.className = row.className.replace(" temp", "");
+        var els = row.getElementsByTagName("*");
+        for (var i = 0; i < els.length; i++) {
+            if (els[i].getAttribute("data-id") === String(oldId)) {
+                els[i].setAttribute("data-id", String(newId));
+            }
+            if (els[i].id) {
+                els[i].id = els[i].id.split("-")[0] + "-" + newId;
+            }
+        }
+    }
+
+    function addTask(text) {
+        var info = dayInfo(state.openIdx);
+        var days = state.addRepeat && state.addDays.length ? state.addDays.slice(0) : null;
+        var task = {
+            id: -(++state.tempSeq),
+            text: text,
+            date: days ? null : info.iso,
+            recurring_days: days,
+            done_dates: []
+        };
+        state.tasks.push(task);
+        state.addRepeat = false;
+        state.addDays = [];
+        if (days) {
+            render();
+        } else {
+            rerenderOpen();
+        }
+        // Continua no campo para adicionar a próxima tarefa
+        focusById("add-text");
+        sync("kt_add", { p_text: text, p_date: info.iso, p_days: days }, function (newId) {
+            if (typeof newId === "number") {
+                replaceTempId(task, newId);
+            }
+        });
+    }
+
+    function saveEdit(id, text) {
+        var t = findTask(id);
+        if (!t) {
+            return;
+        }
+        var info = dayInfo(state.openIdx);
+        var days = state.editDays.length ? state.editDays.slice(0) : null;
+        var wasRecurring = !!t.recurring_days;
+        t.text = text;
+        if (days) {
+            t.recurring_days = days;
+            t.date = null;
+        } else {
+            if (!t.date) {
+                t.date = info.iso;
+            }
+            t.recurring_days = null;
+        }
+        state.editingId = null;
+        if (days || wasRecurring) {
+            render();
+        } else {
+            rerenderOpen();
+        }
+        focusById("tg-" + id);
+        sync("kt_update", { p_id: id, p_text: text, p_date: info.iso, p_days: days });
+    }
+
+    function cancelEdit() {
+        var id = state.editingId;
+        state.editingId = null;
+        rerenderOpen();
+        focusById("mo-" + id);
+    }
+
+    function showToast(text) {
+        toast.innerHTML = '<div class="toast-inner">' +
+            '<span class="toast-text">' + escapeHtml(text) + "</span>" +
+            '<span class="toast-act"><button type="button" class="toast-btn" id="undo-btn" data-action="undo">desfazer</button></span>' +
+            "</div>";
+        toast.className = "toast show";
+    }
+
+    function hideToast() {
+        toast.className = "toast";
+        toast.innerHTML = "";
+    }
+
+    // Remove na hora e dá alguns segundos para desfazer antes de apagar no servidor
+    function deleteTask(id) {
+        if (id < 0) {
+            return;
+        }
+        if (state.pendingDelete) {
+            commitDelete();
+        }
+        var i = indexOfTask(id);
+        if (i < 0) {
+            return;
+        }
+        var t = state.tasks[i];
+        state.tasks.splice(i, 1);
+        state.actionsId = null;
+        state.pendingDelete = { task: t, index: i, timer: setTimeout(commitDelete, UNDO_MS) };
+        if (t.recurring_days) {
+            render();
+        } else {
+            rerenderOpen();
+        }
+        showToast("“" + t.text + "” removida.");
+    }
+
+    function commitDelete() {
+        var pd = state.pendingDelete;
+        if (!pd) {
+            return;
+        }
+        clearTimeout(pd.timer);
+        state.pendingDelete = null;
+        hideToast();
+        sync("kt_delete", { p_id: pd.task.id });
+    }
+
+    function undoDelete() {
+        var pd = state.pendingDelete;
+        if (!pd) {
+            return;
+        }
+        clearTimeout(pd.timer);
+        state.pendingDelete = null;
+        hideToast();
+        state.tasks.splice(Math.min(pd.index, state.tasks.length), 0, pd.task);
+        if (pd.task.recurring_days) {
+            render();
+        } else {
+            rerenderOpen();
+        }
+        focusById("tg-" + pd.task.id);
+    }
+
+    // ---------- eventos ----------
+
+    app.onclick = function (e) {
+        e = e || window.event;
+        var el = closest(e.target || e.srcElement, "data-action", app);
+        if (!el || el.disabled) {
+            return;
+        }
+        var action = el.getAttribute("data-action");
+        var id = parseInt(el.getAttribute("data-id"), 10);
+        var idx = parseInt(el.getAttribute("data-idx"), 10);
+        var day = parseInt(el.getAttribute("data-day"), 10);
+        var t;
+
+        if (action === "refresh") {
+            load();
+        } else if (action === "theme") {
+            setTheme(isDark() ? "light" : "dark", true);
+            el.innerHTML = themeLabel();
+        } else if (action === "font-down" || action === "font-up") {
+            setFontStep(state.fontStep + (action === "font-up" ? 1 : -1), true);
+        } else if (action === "open") {
+            openDay(idx, el);
+        } else if (action === "toggle") {
+            toggleTask(id, idx);
+        } else if (action === "more") {
+            if (id < 0) {
+                return;
+            }
+            state.actionsId = state.actionsId === id ? null : id;
+            rerenderOpen();
+        } else if (action === "edit") {
+            t = findTask(id);
+            if (!t) {
+                return;
+            }
+            state.editingId = id;
+            state.actionsId = null;
+            state.editDays = t.recurring_days ? t.recurring_days.slice(0) : [];
+            rerenderOpen();
+            focusById("edit-text");
+        } else if (action === "cancel-edit") {
+            cancelEdit();
+        } else if (action === "edit-day") {
+            state.editDays = toggleIn(state.editDays, day);
+            keepInput("edit-text", rerenderOpen);
+        } else if (action === "delete") {
+            deleteTask(id);
+        } else if (action === "add-repeat") {
+            state.addRepeat = !state.addRepeat;
+            state.addDays = state.addRepeat ? [dayInfo(state.openIdx).dow] : [];
+            keepInput("add-text", rerenderOpen);
+        } else if (action === "add-day") {
+            state.addDays = toggleIn(state.addDays, day);
+            keepInput("add-text", rerenderOpen);
+        }
+    };
+
+    toast.onclick = function (e) {
+        e = e || window.event;
+        var el = closest(e.target || e.srcElement, "data-action", toast);
+        if (el && el.getAttribute("data-action") === "undo") {
+            undoDelete();
+        }
+    };
+
     app.onsubmit = function (e) {
         e = e || window.event;
         if (e.preventDefault) {
@@ -794,44 +1346,56 @@
         }
         var form = e.target || e.srcElement;
         var kind = form.getAttribute("data-form");
-        var text;
+        var input = document.getElementById(kind === "add" ? "add-text" : "edit-text");
+        var text = input ? input.value.replace(/^\s+|\s+$/g, "") : "";
+        if (!text) {
+            return false;
+        }
         if (kind === "add") {
-            text = document.getElementById("add-text").value.replace(/^\s+|\s+$/g, "");
-            if (!text) {
-                return false;
-            }
-            var days = state.addRepeat ? state.addDays : null;
-            state.addRepeat = false;
-            state.addDays = [];
-            act("kt_add", {
-                p_text: text,
-                p_day: state.openDay,
-                p_days: days
-            });
+            addTask(text);
         } else if (kind === "edit") {
-            text = document.getElementById("edit-text").value.replace(/^\s+|\s+$/g, "");
-            if (!text) {
-                return false;
-            }
-            state.editingId = null;
-            act("kt_update", {
-                p_id: parseInt(form.getAttribute("data-id"), 10),
-                p_text: text,
-                p_day: state.openDay,
-                p_days: state.editDays
-            });
+            saveEdit(parseInt(form.getAttribute("data-id"), 10), text);
         }
         return false;
     };
 
-    // Atualiza só a linha da data a cada minuto (evita redesenhar a tela toda no e-ink)
+    // Esc fecha a edição ou o menu de ações (no computador)
+    document.onkeydown = function (e) {
+        e = e || window.event;
+        var isEsc = e.key === "Escape" || e.key === "Esc" || e.keyCode === 27;
+        if (!isEsc) {
+            return;
+        }
+        if (state.editingId !== null) {
+            cancelEdit();
+        } else if (state.actionsId !== null) {
+            var id = state.actionsId;
+            state.actionsId = null;
+            rerenderOpen();
+            focusById("mo-" + id);
+        }
+    };
+
+    // A cada minuto: atualiza a hora e, se o dia virou, recarrega a lista
+    var lastLocalDay = formatISO(new Date());
     setInterval(function () {
+        if (state.today === null) {
+            return;
+        }
+        var nowDay = formatISO(new Date());
+        if (nowDay !== lastLocalDay) {
+            lastLocalDay = nowDay;
+            load();
+            return;
+        }
         var el = document.getElementById("date-line");
-        if (el && state.weekStart !== null) {
-            el.innerHTML = dateLine(dateOfDay(state.openDay), state.openDay === state.todayDow);
+        if (el) {
+            el.innerHTML = dateLine(dayInfo(state.openIdx).date, state.openIdx);
         }
     }, 60000);
 
+    initTheme();
+    setFontStep(savedFontStep(), false);
     state.token = DEMO ? (getToken() || "demo") : getToken();
     if (state.token) {
         load();
