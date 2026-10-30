@@ -320,27 +320,43 @@
         outline: none;
         -webkit-appearance: none;
     }
-    .add .time-input, .edit .time-input {
+    /* Seletor de horário em grade: hora e depois minutos, dois toques */
+    .tp {
+        margin-top: 8px;
+    }
+    .tp-grid {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .tp-grid td {
+        padding: 0 8px 8px 0;
+    }
+    .tp-btn {
         display: block;
-        width: 160px;
-        border: none;
-        border-bottom: 2px solid #8e8d89;
-        font-size: 22px;
-        padding: 8px 0;
-        font-family: inherit;
+        width: 100%;
+        height: 48px;
+        padding: 0;
+        border: 2px solid #1e1e1e;
         background: transparent;
         color: #1e1e1e;
-        border-radius: 0;
-        outline: none;
-    }
-    .add .time-input:focus, .edit .time-input:focus {
-        border-bottom-color: #cf1020;
-    }
-    .field-error {
-        margin: 8px 0 0 0;
-        font-size: 16px;
+        font-family: "Space Mono", "Courier New", monospace;
+        font-size: 18px;
         font-weight: bold;
-        color: #a50d1a;
+    }
+    .tp-btn.on {
+        background: #1e1e1e;
+        color: #e3e2de;
+    }
+    .tp-night {
+        padding-left: 0;
+    }
+    .tp-result {
+        margin-top: 8px;
+        font-size: 20px;
+    }
+    .tp-result strong {
+        font-family: "Space Mono", "Courier New", monospace;
     }
     .add input[type=text]:focus, .edit input[type=text]:focus {
         border-bottom-color: #cf1020;
@@ -673,13 +689,16 @@
     .dark .task-time {
         color: #b3b2ae;
     }
-    .dark .task-time.late, .dark .field-error {
+    .dark .task-time.late {
         color: #ff8a90;
     }
-    .dark .add .time-input, .dark .edit .time-input {
+    .dark .tp-btn {
+        border-color: #e4e3df;
         color: #e4e3df;
-        border-bottom-color: #7a7976;
-        color-scheme: dark;
+    }
+    .dark .tp-btn.on {
+        background: #e4e3df;
+        color: #2f2f2f;
     }
     .dark .cal-bar {
         background-color: #2f2f2f;
@@ -746,8 +765,10 @@
         editingId: null,
         editDays: [],
         addRepeat: false,
-        addTimeOpen: false,   // campo de horário visível no "adicionar"
-        timeError: null,      // aviso de horário inválido
+        timeOpen: false,      // seletor de horário visível (no adicionar ou no editar)
+        pickH: null,          // hora escolhida no seletor
+        pickM: null,          // minutos escolhidos no seletor
+        pickNight: false,     // mostra a linha 00–05
         addDays: [],
         actionsId: null,      // tarefa com "editar" e "✕" visíveis
         error: null,
@@ -889,24 +910,6 @@
             }
         }
         return n;
-    }
-
-    // Aceita "14:30", "1430", "9:05", "9h", "14h30" -> "14:30". Inválido -> false; vazio -> null
-    function parseTime(s) {
-        s = (s || "").replace(/\s+/g, "").toLowerCase();
-        if (!s) {
-            return null;
-        }
-        var m = /^(\d{1,2})(?:[:h.]?(\d{2}))?h?$/.exec(s);
-        if (!m) {
-            return false;
-        }
-        var hh = parseInt(m[1], 10);
-        var mm = m[2] ? parseInt(m[2], 10) : 0;
-        if (hh > 23 || mm > 59) {
-            return false;
-        }
-        return pad(hh) + ":" + pad(mm);
     }
 
     function nowHHMM() {
@@ -1267,12 +1270,77 @@
         return h + "</div>";
     }
 
-    function timeField(id, value, hintText) {
-        return '<label class="hint" for="' + id + '">' + hintText + "</label>" +
-            '<input type="time" class="time-input" id="' + id + '" value="' + (value || "") + '"' +
-            ' placeholder="14:30" inputmode="numeric" autocomplete="off"' +
-            (state.timeError ? ' aria-invalid="true" aria-describedby="time-error"' : "") + ">" +
-            (state.timeError ? '<p class="field-error" id="time-error" role="alert">' + state.timeError + "</p>" : "");
+    function pickedTime() {
+        if (!state.timeOpen || state.pickH === null) {
+            return null;
+        }
+        return pad(state.pickH) + ":" + pad(state.pickM === null ? 0 : state.pickM);
+    }
+
+    function setPickFrom(time) {
+        if (time) {
+            state.pickH = parseInt(time.substr(0, 2), 10);
+            state.pickM = parseInt(time.substr(3, 2), 10);
+            state.pickNight = state.pickH < 6;
+        } else {
+            state.pickH = null;
+            state.pickM = null;
+            state.pickNight = false;
+        }
+    }
+
+    function timeToggle() {
+        return '<button type="button" class="btn alt' + (state.timeOpen ? " on" : "") + '" id="time-btn"' +
+            ' data-action="toggle-time" aria-pressed="' + (state.timeOpen ? "true" : "false") + '">Horário</button>';
+    }
+
+    function pickerTable(values, selected, action, prefix, perRow, unit) {
+        var h = '<table class="tp-grid"><tr>';
+        for (var i = 0; i < values.length; i++) {
+            if (i > 0 && i % perRow === 0) {
+                h += "</tr><tr>";
+            }
+            var v = values[i];
+            var on = selected === v;
+            h += '<td><button type="button" class="tp-btn' + (on ? " on" : "") + '" id="' + prefix + v +
+                '" data-action="' + action + '" data-v="' + v + '" aria-pressed="' + (on ? "true" : "false") +
+                '" aria-label="' + v + " " + unit + '">' + pad(v) + "</button></td>";
+        }
+        return h + "</tr></table>";
+    }
+
+    // Grade de toques: hora (06–23, com 00–05 em "madrugada") e minutos (00/15/30/45)
+    function timePicker() {
+        var hours = [];
+        for (var hh = state.pickNight ? 0 : 6; hh < 24; hh++) {
+            hours.push(hh);
+        }
+        var mins = [0, 15, 30, 45];
+        // Um horário salvo fora da grade (ex.: 12:10) continua escolhível
+        if (state.pickM !== null && !contains(mins, state.pickM)) {
+            mins.push(state.pickM);
+            mins.sort(function (x, y) {
+                return x - y;
+            });
+        }
+        var time = pickedTime();
+        var h = '<div class="tp" role="group" aria-labelledby="tp-h-label">' +
+            '<div class="hint" id="tp-h-label">Hora</div>' +
+            pickerTable(hours, state.pickH, "pick-h", "tph-", 6, "horas");
+        if (!state.pickNight) {
+            h += '<button type="button" class="link tp-night" id="tp-night" data-action="pick-night">madrugada (00 a 05)</button>';
+        }
+        h += "</div>" +
+            '<div class="tp" role="group" aria-labelledby="tp-m-label">' +
+            '<div class="hint" id="tp-m-label">Minutos</div>' +
+            pickerTable(mins, state.pickM, "pick-m", "tpm-", mins.length, "minutos") +
+            "</div>" +
+            '<div class="tp-result" aria-live="polite">' +
+            (time ? "Horário: <strong>" + time + "</strong> " +
+                '<button type="button" class="link" id="tp-clear" data-action="pick-clear">limpar</button>' :
+                "Escolha a hora") +
+            "</div>";
+        return h;
     }
 
     function renderTask(t, idx) {
@@ -1280,7 +1348,8 @@
             return '<form class="edit" data-form="edit" data-id="' + t.id + '">' +
                 '<label class="sr" for="edit-text">Texto da tarefa</label>' +
                 '<input type="text" id="edit-text" value="' + escapeHtml(t.text) + '" autocomplete="off">' +
-                timeField("edit-time", t.time, "Horário (deixe vazio para tirar):") +
+                '<div>' + timeToggle() + "</div>" +
+                (state.timeOpen ? timePicker() : "") +
                 '<div class="hint" id="edit-hint">Repetir nos dias (nenhum = só neste dia):</div>' +
                 weekdayButtons(state.editDays, "edit-day", "edit-hint") +
                 '<button type="submit" class="btn">Salvar</button>' +
@@ -1353,16 +1422,15 @@
         h += '<form class="add" data-form="add">' +
             '<label class="sr" for="add-text">Nova tarefa para ' + DAY_FULL[info.dow] + "</label>" +
             '<input type="text" id="add-text" placeholder="Adicionar tarefa..." autocomplete="off">';
-        if (state.addTimeOpen) {
-            h += timeField("add-time", "", "Horário:");
+        if (state.timeOpen && state.editingId === null) {
+            h += timePicker();
         }
         if (state.addRepeat) {
             h += '<div class="hint" id="add-hint">Repetir toda semana nos dias:</div>' +
                 weekdayButtons(state.addDays, "add-day", "add-hint");
         }
         h += '<button type="submit" class="btn">Adicionar</button>' +
-            '<button type="button" class="btn alt' + (state.addTimeOpen ? " on" : "") + '" id="time-btn"' +
-            ' data-action="add-time" aria-pressed="' + (state.addTimeOpen ? "true" : "false") + '">Horário</button>' +
+            (state.editingId === null ? timeToggle() : "") +
             '<button type="button" class="btn alt' + (state.addRepeat ? " on" : "") + '" id="repeat-btn"' +
             ' data-action="add-repeat" aria-pressed="' + (state.addRepeat ? "true" : "false") + '">↻ Repetir</button>' +
             "</form></section>";
@@ -1522,6 +1590,11 @@
         }
     }
 
+    // Campo de texto do formulário que está aberto (edição ou adicionar)
+    function formInputId() {
+        return state.editingId !== null ? "edit-text" : "add-text";
+    }
+
     // ---------- ações ----------
 
     // Abre o dia no próprio lugar: o nome tocado fica parado sob o dedo
@@ -1532,6 +1605,7 @@
         state.editingId = null;
         state.actionsId = null;
         state.addRepeat = false;
+        state.timeOpen = false;
         state.addDays = [];
         renderDayOnly(old);
         renderDayOnly(idx);
@@ -1548,6 +1622,7 @@
         state.editingId = null;
         state.actionsId = null;
         state.addRepeat = false;
+        state.timeOpen = false;
         state.addDays = [];
         render();
         window.scrollTo(0, 0);
@@ -1657,8 +1732,8 @@
             done_dates: []
         };
         state.tasks.push(task);
-        state.addTimeOpen = false;
         state.addRepeat = false;
+        state.timeOpen = false;
         state.addDays = [];
         if (days) {
             render();
@@ -1684,6 +1759,7 @@
         var wasRecurring = !!t.recurring_days;
         t.text = text;
         t.time = time;
+        state.timeOpen = false;
         if (days) {
             t.recurring_days = days;
             t.date = null;
@@ -1706,6 +1782,7 @@
     function cancelEdit() {
         var id = state.editingId;
         state.editingId = null;
+        state.timeOpen = false;
         rerenderOpen();
         focusById("mo-" + id);
     }
@@ -1823,7 +1900,8 @@
             }
             state.editingId = id;
             state.actionsId = null;
-            state.timeError = null;
+            state.timeOpen = !!t.time;
+            setPickFrom(t.time);
             state.editDays = t.recurring_days ? t.recurring_days.slice(0) : [];
             rerenderOpen();
             focusById("edit-text");
@@ -1834,13 +1912,27 @@
             keepInput("edit-text", rerenderOpen);
         } else if (action === "delete") {
             deleteTask(id);
-        } else if (action === "add-time") {
-            state.addTimeOpen = !state.addTimeOpen;
-            state.timeError = null;
-            keepInput("add-text", rerenderOpen);
-            if (state.addTimeOpen) {
-                focusById("add-time");
+        } else if (action === "toggle-time") {
+            state.timeOpen = !state.timeOpen;
+            setPickFrom(null);
+            keepInput(formInputId(), rerenderOpen);
+        } else if (action === "pick-h") {
+            state.pickH = parseInt(el.getAttribute("data-v"), 10);
+            if (state.pickM === null) {
+                state.pickM = 0;
             }
+            keepInput(formInputId(), rerenderOpen);
+        } else if (action === "pick-m") {
+            state.pickM = parseInt(el.getAttribute("data-v"), 10);
+            keepInput(formInputId(), rerenderOpen);
+        } else if (action === "pick-night") {
+            state.pickNight = true;
+            keepInput(formInputId(), rerenderOpen);
+            focusById("tph-0");
+        } else if (action === "pick-clear") {
+            setPickFrom(null);
+            keepInput(formInputId(), rerenderOpen);
+            focusById("time-btn");
         } else if (action === "add-repeat") {
             state.addRepeat = !state.addRepeat;
             state.addDays = state.addRepeat ? [dayInfo(state.openIdx).dow] : [];
@@ -1871,16 +1963,7 @@
         if (!text) {
             return false;
         }
-        var timeInput = document.getElementById(kind === "add" ? "add-time" : "edit-time");
-        var time = parseTime(timeInput ? timeInput.value : "");
-        if (time === false) {
-            // Navegadores sem seletor de hora (como o do Kindle) aceitam texto livre
-            state.timeError = "Horário inválido. Use o formato 14:30.";
-            keepInput(kind === "add" ? "add-text" : "edit-text", rerenderOpen);
-            focusById(kind === "add" ? "add-time" : "edit-time");
-            return false;
-        }
-        state.timeError = null;
+        var time = pickedTime();
         if (kind === "add") {
             addTask(text, time);
         } else if (kind === "edit") {
