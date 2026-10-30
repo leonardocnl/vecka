@@ -143,8 +143,13 @@
         color: #4f4e4b;
     }
     .status.error {
-        color: #a50d1a;
+        color: #fff;
         font-weight: bold;
+    }
+    .status.error span {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #cf1020;
     }
 
     /* ===== Dias ===== */
@@ -296,8 +301,10 @@
         color: #4f4e4b;
     }
     /* Horário que já passou, hoje, numa tarefa não feita */
-    .task-time.late {
-        color: #a50d1a;
+    .task-time.late span {
+        padding: 2px 6px;
+        background: #cf1020;
+        color: #fff;
     }
     .done .task-time {
         font-weight: normal;
@@ -608,11 +615,15 @@
         background-color: #2f2f2f;
         color: #e4e3df;
     }
+    /* No escuro, um anel claro por fora do contorno vermelho garante que o
+       foco seja visível sem mudar o tom do vermelho */
     .dark button:focus {
-        outline-color: #ff6b73;
+        outline-color: #cf1020;
+        box-shadow: 0 0 0 7px #e4e3df;
     }
     .dark button:focus:not(:focus-visible) {
         outline: none;
+        box-shadow: none;
     }
     .dark .brand svg {
         fill: #e4e3df;
@@ -620,9 +631,6 @@
     .dark .link, .dark .date, .dark .count, .dark .tag, .dark .rec,
     .dark .small, .dark .hint, .dark .status, .dark .empty {
         color: #b3b2ae;
-    }
-    .dark .status.error {
-        color: #ff8a90;
     }
     .dark .day {
         border-bottom-color: #555;
@@ -636,9 +644,6 @@
     .dark .box {
         border-color: #e4e3df;
     }
-    .dark .done .box:before, .dark .done .box:after {
-        background: #ff4d57;
-    }
     .dark .done .label {
         color: #a3a29e;
     }
@@ -647,7 +652,7 @@
         border-bottom-color: #7a7976;
     }
     .dark .add input[type=text]:focus, .dark .edit input[type=text]:focus {
-        border-bottom-color: #ff6b73;
+        border-bottom-color: #cf1020;
     }
     .dark input::-webkit-input-placeholder {
         color: #a9a8a4;
@@ -688,9 +693,6 @@
     }
     .dark .task-time {
         color: #b3b2ae;
-    }
-    .dark .task-time.late {
-        color: #ff8a90;
     }
     .dark .tp-btn {
         border-color: #e4e3df;
@@ -1255,7 +1257,7 @@
         var el = document.getElementById("status");
         if (el) {
             el.className = "status" + (state.error ? " error" : "");
-            el.innerHTML = statusHtml();
+            el.innerHTML = state.error ? "<span>" + statusHtml() + "</span>" : statusHtml();
         }
     }
 
@@ -1377,7 +1379,7 @@
         }
         h += "</button></div>";
         if (t.time) {
-            h += '<div class="task-time' + (late ? " late" : "") + '" aria-hidden="true">' + t.time + "</div>";
+            h += '<div class="task-time' + (late ? " late" : "") + '" aria-hidden="true"><span>' + t.time + "</span></div>";
         }
         h += '<div class="task-actions">';
         if (showActions) {
@@ -1536,7 +1538,7 @@
             '<button type="button" class="link" id="theme-btn" data-action="theme">' + themeLabel() + "</button>" +
             "</div></header>" +
             '<div id="status" class="status' + (state.error ? " error" : "") + '" role="status" aria-live="polite">' +
-            statusHtml() + "</div>" +
+            (state.error ? "<span>" + statusHtml() + "</span>" : statusHtml()) + "</div>" +
             "";
         if (state.view === "calendar") {
             h += "<main>" + renderCalendar() + "</main>";
