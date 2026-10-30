@@ -118,6 +118,44 @@
         text-decoration: underline;
         font-family: inherit;
     }
+    /* Ícones do topo (letra, tema, limpar tela) */
+    .icon-btn {
+        display: inline-block;
+        min-width: 44px;
+        min-height: 48px;
+        padding: 0;
+        margin-left: 4px;
+        background: none;
+        border: none;
+        color: #4f4e4b;
+        vertical-align: middle;
+        font-family: "Space Mono", "Courier New", monospace;
+        font-weight: bold;
+        line-height: 1;
+    }
+    .icon-btn svg {
+        width: 24px;
+        height: 24px;
+        vertical-align: middle;
+    }
+    .icon-btn.a-sm {
+        font-size: 15px;
+    }
+    .icon-btn.a-lg {
+        font-size: 24px;
+    }
+    .icon-btn:disabled {
+        opacity: 0.35;
+    }
+    /* Flash preto e branco que limpa os "fantasmas" do e-ink */
+    .flash {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 99;
+    }
     .link:disabled {
         opacity: 0.35;
         text-decoration: none;
@@ -180,7 +218,11 @@
         font-size: 52px;
         color: #1e1e1e;
     }
-    .count, .tag {
+    .count {
+        border: 2px solid currentColor;
+        padding: 0 6px;
+    }
+    .count, .tag, .dd {
         font-family: "IBM Plex Sans", Helvetica, Arial, sans-serif;
         font-size: 20px;
         font-weight: normal;
@@ -287,6 +329,40 @@
         font-size: 22px;
         letter-spacing: 1px;
     }
+    /* Ícone de nota ao lado do texto da tarefa */
+    .note-ic {
+        display: inline-block;
+        margin-left: 8px;
+        color: #4f4e4b;
+        vertical-align: -2px;
+    }
+    .note-ic svg {
+        width: 16px;
+        height: 16px;
+    }
+    /* Painel que abre no "…": nota e ações */
+    .task-panel {
+        padding: 0 0 16px 38px;
+    }
+    .task-note {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        line-height: 1.4;
+        color: #4f4e4b;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .btn.sm {
+        min-height: 44px;
+        padding: 0 16px;
+        margin-top: 8px;
+        font-size: 17px;
+    }
+    .btn.sq {
+        min-width: 44px;
+        padding: 0;
+        font-size: 20px;
+    }
 
     /* Horário alinhado à direita, como numa agenda */
     .task-time {
@@ -364,6 +440,25 @@
     }
     .tp-result strong {
         font-family: "Space Mono", "Courier New", monospace;
+    }
+    .edit textarea {
+        display: block;
+        width: 100%;
+        min-height: 88px;
+        border: 2px solid #8e8d89;
+        padding: 8px;
+        font-size: 18px;
+        line-height: 1.4;
+        font-family: inherit;
+        background: transparent;
+        color: #1e1e1e;
+        border-radius: 0;
+        outline: none;
+        resize: vertical;
+        -webkit-appearance: none;
+    }
+    .edit textarea:focus {
+        border-color: #cf1020;
     }
     .add input[type=text]:focus, .edit input[type=text]:focus {
         border-bottom-color: #cf1020;
@@ -694,6 +789,16 @@
     .dark .task-time {
         color: #b3b2ae;
     }
+    .dark .icon-btn, .dark .note-ic, .dark .task-note {
+        color: #b3b2ae;
+    }
+    .dark .edit textarea {
+        color: #e4e3df;
+        border-color: #7a7976;
+    }
+    .dark .edit textarea:focus {
+        border-color: #cf1020;
+    }
     .dark .tp-btn {
         border-color: #e4e3df;
         color: #e4e3df;
@@ -756,6 +861,16 @@
 
     var DEMO = SUPABASE_URL.indexOf("http") !== 0;
 
+    // Navegador do Kindle (ou teste com #...&kindle=1 no link)
+    var IS_KINDLE = /Kindle/i.test(navigator.userAgent) || /[#&]kindle=1/.test(window.location.hash);
+
+    var ICON_THEME = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" ' +
+        'stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>';
+    var ICON_CLEAN = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linejoin="round"><path d="M3 14l9-9 7 7-7 7H8z"/><path d="M7.5 9.5l7 7"/><path d="M12 19h9"/></svg>';
+    var ICON_NOTE = '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">' +
+        '<path d="M3 2h7l3 3v9H3z"/><path d="M5.5 8h5M5.5 11h5"/></svg>';
+
     var WORDMARK = '<svg viewBox="0 0 433 144" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Vecka">' +
         '<path fill-rule="evenodd" clip-rule="evenodd" d="M283.216 80.9404H286.465L325.857 42H353.677L303.115 90.4746L338.491 125.605L366.5 42H399.5L433 142H411L384.613 57.0176H381.387L355 142H327.685L286.465 100.414H283.216V142H262.301V127.754C258.562 132.294 253.88 136.031 248.252 138.962C241.545 142.321 233.429 144 223.905 144C214.382 144 205.729 141.985 197.949 137.954C190.303 133.923 184.2 128.078 179.64 120.42C175.834 113.836 173.667 106.111 173.133 97.2441H102.46C102.73 105.977 105.632 112.963 111.166 118.203C116.835 123.309 123.855 125.861 132.224 125.861C140.053 125.861 145.925 124.115 149.84 120.622C153.889 117.129 156.994 113.097 159.153 108.529L176.364 117.397C174.474 121.159 171.707 125.123 168.062 129.288C164.553 133.453 159.896 136.946 154.092 139.768C148.287 142.589 140.863 144 131.819 144C121.695 144 112.853 141.917 105.294 137.752C97.7349 133.453 91.796 127.474 87.4766 119.815C83.964 113.274 81.9254 105.881 81.3613 97.6357L66.5 142H33.5L0 42H22L48.3867 126.982H51.6133L78 42H100L96.9297 51.1631C99.3359 48.9819 101.989 47.0766 104.89 45.4492C112.449 41.1499 121.155 39 131.009 39C140.593 39 148.962 41.1499 156.116 45.4492C163.405 49.6143 169.075 55.4585 173.125 62.9824C174.338 65.2367 175.368 67.6064 176.218 70.0898C177.154 67.5048 178.294 65.0683 179.64 62.7812C184.2 55.1231 190.304 49.2787 197.949 45.248C205.729 41.083 214.382 39 223.905 39C233.429 39 241.545 40.747 248.252 44.2402C253.879 47.1714 258.562 50.907 262.301 55.4463V0H283.216V80.9404ZM224.308 57.541C218.54 57.541 213.308 58.8852 208.613 61.5723C204.053 64.125 200.431 67.8873 197.748 72.8584C195.066 77.6951 193.725 83.6066 193.725 90.5928V92.4072C193.725 99.3936 195.065 105.373 197.748 110.344C200.431 115.315 204.053 119.077 208.613 121.63C213.308 124.183 218.54 125.459 224.308 125.459C233.027 125.459 239.667 123.241 244.228 118.808C248.788 114.24 251.672 108.462 252.879 101.476L262.301 103.646V79.415L252.275 81.5244C251.605 77.0906 250.196 73.0593 248.05 69.4316C245.904 65.8042 242.886 62.9153 238.996 60.7656C235.106 58.6159 230.21 57.541 224.308 57.541ZM130.807 57.3398C122.977 57.3398 116.566 59.4896 111.571 63.7891C106.712 67.9541 103.742 73.7984 102.662 81.3223H157.938C157.398 73.7985 154.699 67.9541 149.84 63.7891C144.98 59.4896 138.636 57.3398 130.807 57.3398Z"/></svg>';
 
@@ -771,6 +886,7 @@
         pickH: null,          // hora escolhida no seletor
         pickM: null,          // minutos escolhidos no seletor
         pickNight: false,     // mostra a linha 00–05
+        pickFine: false,      // minutos de 5 em 5
         addDays: [],
         actionsId: null,      // tarefa com "editar" e "✕" visíveis
         error: null,
@@ -889,6 +1005,16 @@
         for (var j = 0; j < todo.length; j++) {
             (todo[j].time ? timed : untimed).push(todo[j]);
         }
+        // Sem horário: na ordem escolhida com ↑ ↓ (posição), depois por criação
+        for (var u = 1; u < untimed.length; u++) {
+            var item = untimed[u];
+            var k = u - 1;
+            while (k >= 0 && posOf(untimed[k]) > posOf(item)) {
+                untimed[k + 1] = untimed[k];
+                k--;
+            }
+            untimed[k + 1] = item;
+        }
         // Ordenação por inserção: estável e sem depender do sort do navegador
         for (var a = 1; a < timed.length; a++) {
             var cur = timed[a];
@@ -900,6 +1026,23 @@
             timed[b + 1] = cur;
         }
         return timed.concat(untimed).concat(done);
+    }
+
+    function posOf(t) {
+        return typeof t.pos === "number" ? t.pos : 0;
+    }
+
+    // Tarefas sem horário e não feitas do dia (as que podem ser reordenadas)
+    function movableFor(idx) {
+        var list = tasksFor(idx);
+        var iso = dayInfo(idx).iso;
+        var out = [];
+        for (var i = 0; i < list.length; i++) {
+            if (!list[i].time && !isDone(list[i], iso)) {
+                out.push(list[i]);
+            }
+        }
+        return out;
     }
 
     function pendingCount(idx) {
@@ -1076,7 +1219,16 @@
             return;
         }
         if (name === "kt_add") {
-            t = { id: demoData.nextId++, text: p.p_text, date: null, recurring_days: null, time: p.p_time || null, done_dates: [] };
+            t = {
+                id: demoData.nextId++,
+                text: p.p_text,
+                date: null,
+                recurring_days: null,
+                time: p.p_time || null,
+                note: null,
+                pos: new Date().getTime() / 1000,
+                done_dates: []
+            };
             if (p.p_days && p.p_days.length) {
                 t.recurring_days = p.p_days.slice(0);
             } else {
@@ -1097,6 +1249,7 @@
             } else if (name === "kt_update") {
                 t.text = p.p_text;
                 t.time = p.p_time || null;
+                t.note = p.p_note || null;
                 if (p.p_days && p.p_days.length) {
                     t.recurring_days = p.p_days.slice(0);
                     t.date = null;
@@ -1106,6 +1259,8 @@
                     }
                     t.recurring_days = null;
                 }
+            } else if (name === "kt_set_pos") {
+                t.pos = p.p_pos;
             } else if (name === "kt_delete") {
                 demoData.tasks.splice(i, 1);
             }
@@ -1205,7 +1360,7 @@
     }
 
     function themeLabel() {
-        return isDark() ? "claro" : "escuro";
+        return isDark() ? "Mudar para tema claro" : "Mudar para tema escuro";
     }
 
     function setFontStep(step, save) {
@@ -1284,10 +1439,12 @@
             state.pickH = parseInt(time.substr(0, 2), 10);
             state.pickM = parseInt(time.substr(3, 2), 10);
             state.pickNight = state.pickH < 6;
+            state.pickFine = state.pickM % 15 !== 0;
         } else {
             state.pickH = null;
             state.pickM = null;
             state.pickNight = false;
+            state.pickFine = false;
         }
     }
 
@@ -1318,6 +1475,12 @@
             hours.push(hh);
         }
         var mins = [0, 15, 30, 45];
+        if (state.pickFine) {
+            mins = [];
+            for (var mm = 0; mm < 60; mm += 5) {
+                mins.push(mm);
+            }
+        }
         // Um horário salvo fora da grade (ex.: 12:10) continua escolhível
         if (state.pickM !== null && !contains(mins, state.pickM)) {
             mins.push(state.pickM);
@@ -1335,7 +1498,9 @@
         h += "</div>" +
             '<div class="tp" role="group" aria-labelledby="tp-m-label">' +
             '<div class="hint" id="tp-m-label">Minutos</div>' +
-            pickerTable(mins, state.pickM, "pick-m", "tpm-", mins.length, "minutos") +
+            pickerTable(mins, state.pickM, "pick-m", "tpm-", state.pickFine ? 6 : mins.length, "minutos") +
+            (state.pickFine ? "" :
+                '<button type="button" class="link tp-night" id="tp-fine" data-action="pick-fine">mais minutos (de 5 em 5)</button>') +
             "</div>" +
             '<div class="tp-result" aria-live="polite">' +
             (time ? "Horário: <strong>" + time + "</strong> " +
@@ -1350,6 +1515,8 @@
             return '<form class="edit" data-form="edit" data-id="' + t.id + '">' +
                 '<label class="sr" for="edit-text">Texto da tarefa</label>' +
                 '<input type="text" id="edit-text" value="' + escapeHtml(t.text) + '" autocomplete="off">' +
+                '<label class="hint" for="edit-note">Nota (opcional; aparece ao tocar no …)</label>' +
+                '<textarea id="edit-note" rows="3" maxlength="1000">' + escapeHtml(t.note || "") + "</textarea>" +
                 '<div>' + timeToggle() + "</div>" +
                 (state.timeOpen ? timePicker() : "") +
                 '<div class="hint" id="edit-hint">Repetir nos dias (nenhum = só neste dia):</div>' +
@@ -1368,6 +1535,9 @@
             (done ? "true" : "false") + '" data-action="toggle" data-id="' + t.id + '" data-idx="' + idx + '">' +
             '<span class="box" aria-hidden="true"></span>' +
             '<span class="label">' + label + "</span>";
+        if (t.note) {
+            h += '<span class="note-ic" title="Tem nota">' + ICON_NOTE + '</span><span class="sr">, tem nota</span>';
+        }
         var late = isLate(t, idx);
         if (t.time) {
             h += '<span class="sr">, às ' + t.time + (late ? ", atrasada" : "") + "</span>";
@@ -1381,16 +1551,43 @@
         if (t.time) {
             h += '<div class="task-time' + (late ? " late" : "") + '" aria-hidden="true"><span>' + t.time + "</span></div>";
         }
-        h += '<div class="task-actions">';
-        if (showActions) {
-            h += '<button type="button" class="small" id="ed-' + t.id + '" data-action="edit" data-id="' + t.id +
-                '" aria-label="Editar ' + label + '">editar</button>' +
-                '<button type="button" class="small" id="rm-' + t.id + '" data-action="delete" data-id="' + t.id +
-                '" aria-label="Remover ' + label + '">✕</button>';
-        }
-        h += '<button type="button" class="small more" id="mo-' + t.id + '" data-action="more" data-id="' + t.id +
-            '" aria-expanded="' + (showActions ? "true" : "false") + '" aria-label="Mais ações para ' + label + '">…</button>' +
+        h += '<div class="task-actions">' +
+            '<button type="button" class="small more" id="mo-' + t.id + '" data-action="more" data-id="' + t.id +
+            '" aria-expanded="' + (showActions ? "true" : "false") + '" aria-controls="panel-' + t.id +
+            '" aria-label="Mais ações para ' + label + '">…</button>' +
             "</div></div>";
+        if (showActions) {
+            h += renderPanel(t, idx, label);
+        }
+        return h;
+    }
+
+    // Painel do "…": nota (se houver), editar, subir/descer (sem horário) e remover
+    function renderPanel(t, idx, label) {
+        var movable = movableFor(idx);
+        var pos = -1;
+        for (var i = 0; i < movable.length; i++) {
+            if (movable[i].id === t.id) {
+                pos = i;
+            }
+        }
+        var h = '<div class="task-panel" id="panel-' + t.id + '">';
+        if (t.note) {
+            h += '<p class="task-note">' + escapeHtml(t.note) + "</p>";
+        }
+        h += '<button type="button" class="btn alt sm" id="ed-' + t.id + '" data-action="edit" data-id="' + t.id +
+            '" aria-label="Editar ' + label + '">Editar</button>';
+        if (pos > 0) {
+            h += '<button type="button" class="btn alt sm sq" id="up-' + t.id + '" data-action="move" data-dir="-1"' +
+                ' data-id="' + t.id + '" data-idx="' + idx + '" aria-label="Subir ' + label + '" title="Subir">↑</button>';
+        }
+        if (pos >= 0 && pos < movable.length - 1) {
+            h += '<button type="button" class="btn alt sm sq" id="dn-' + t.id + '" data-action="move" data-dir="1"' +
+                ' data-id="' + t.id + '" data-idx="' + idx + '" aria-label="Descer ' + label + '" title="Descer">↓</button>';
+        }
+        h += '<button type="button" class="btn alt sm" id="rm-' + t.id + '" data-action="delete" data-id="' + t.id +
+            '" aria-label="Remover ' + label + '">Remover</button>' +
+            "</div>";
         return h;
     }
 
@@ -1405,7 +1602,8 @@
             h += '<h2 class="day-title">' +
                 '<button type="button" class="day-head" id="dh-' + idx + '" data-action="open" data-idx="' + idx +
                 '" aria-expanded="false">' + name +
-                (idx === 0 ? '<span class="tag">hoje</span>' : "") +
+                (idx === 0 ? '<span class="tag">hoje</span>' :
+                    '<span class="dd">' + pad(info.date.getDate()) + "/" + pad(info.date.getMonth() + 1) + "</span>") +
                 (pending ? '<span class="count">' + pending + '<span class="sr"> ' +
                     (pending === 1 ? "tarefa pendente" : "tarefas pendentes") + "</span></span>" : "") +
                 "</button></h2></section>";
@@ -1533,9 +1731,14 @@
         var h = '<header class="topbar">' +
             '<div class="brand">' + WORDMARK + "</div>" +
             '<div class="top-actions">' +
-            '<button type="button" class="link" id="font-down" data-action="font-down" aria-label="Diminuir letra">A−</button>' +
-            '<button type="button" class="link" id="font-up" data-action="font-up" aria-label="Aumentar letra">A+</button>' +
-            '<button type="button" class="link" id="theme-btn" data-action="theme">' + themeLabel() + "</button>" +
+            (IS_KINDLE ? '<button type="button" class="icon-btn" id="clean-btn" data-action="clean"' +
+                ' aria-label="Limpar a tela" title="Limpar a tela">' + ICON_CLEAN + "</button>" : "") +
+            '<button type="button" class="icon-btn a-sm" id="font-down" data-action="font-down"' +
+            ' aria-label="Diminuir letra" title="Diminuir letra">A</button>' +
+            '<button type="button" class="icon-btn a-lg" id="font-up" data-action="font-up"' +
+            ' aria-label="Aumentar letra" title="Aumentar letra">A</button>' +
+            '<button type="button" class="icon-btn" id="theme-btn" data-action="theme" aria-label="' + themeLabel() +
+            '" title="' + themeLabel() + '">' + ICON_THEME + "</button>" +
             "</div></header>" +
             '<div id="status" class="status' + (state.error ? " error" : "") + '" role="status" aria-live="polite">' +
             (state.error ? "<span>" + statusHtml() + "</span>" : statusHtml()) + "</div>" +
@@ -1576,7 +1779,7 @@
 
     // Mantém o texto digitado quando a tela é redesenhada
     function keepInput(inputId, fn) {
-        var ids = [inputId, inputId.replace("-text", "-time")];
+        var ids = [inputId, inputId.replace("-text", "-note")];
         var values = [];
         var i, input;
         for (i = 0; i < ids.length; i++) {
@@ -1690,6 +1893,54 @@
         focusById("cd-" + info.iso);
     }
 
+    // Pisca a tela em preto e depois branco: força o e-ink a redesenhar tudo
+    function cleanScreen() {
+        var f = document.createElement("div");
+        f.className = "flash";
+        f.style.background = "#000";
+        document.body.appendChild(f);
+        setTimeout(function () {
+            f.style.background = "#fff";
+            setTimeout(function () {
+                document.body.removeChild(f);
+            }, 250);
+        }, 250);
+    }
+
+    // Troca a posição com a vizinha de cima (dir -1) ou de baixo (dir 1)
+    function moveTask(id, idx, dir) {
+        var list = movableFor(idx);
+        var i = -1;
+        for (var k = 0; k < list.length; k++) {
+            if (list[k].id === id) {
+                i = k;
+            }
+        }
+        var j = i + dir;
+        if (i < 0 || j < 0 || j >= list.length) {
+            return;
+        }
+        var a = list[i];
+        var b = list[j];
+        var pa = posOf(a);
+        var pb = posOf(b);
+        if (pa === pb) {
+            pb = pa + dir;
+        }
+        a.pos = pb;
+        b.pos = pa;
+        if (a.recurring_days || b.recurring_days) {
+            render();
+        } else {
+            rerenderOpen();
+        }
+        // Mantém o foco no mesmo botão; se ele sumiu (chegou ao topo/fim), vai para o outro
+        var same = (dir < 0 ? "up-" : "dn-") + id;
+        focusById(document.getElementById(same) ? same : (dir < 0 ? "dn-" : "up-") + id);
+        sync("kt_set_pos", { p_id: a.id, p_pos: a.pos });
+        sync("kt_set_pos", { p_id: b.id, p_pos: b.pos });
+    }
+
     function toggleTask(id, idx) {
         var t = findTask(id);
         if (!t || id < 0) {
@@ -1731,6 +1982,8 @@
             date: days ? null : info.iso,
             recurring_days: days,
             time: time,
+            note: null,
+            pos: new Date().getTime() / 1000,
             done_dates: []
         };
         state.tasks.push(task);
@@ -1751,7 +2004,7 @@
         });
     }
 
-    function saveEdit(id, text, time) {
+    function saveEdit(id, text, time, note) {
         var t = findTask(id);
         if (!t) {
             return;
@@ -1761,6 +2014,7 @@
         var wasRecurring = !!t.recurring_days;
         t.text = text;
         t.time = time;
+        t.note = note;
         state.timeOpen = false;
         if (days) {
             t.recurring_days = days;
@@ -1778,7 +2032,7 @@
             rerenderOpen();
         }
         focusById("tg-" + id);
-        sync("kt_update", { p_id: id, p_text: text, p_date: info.iso, p_days: days, p_time: time });
+        sync("kt_update", { p_id: id, p_text: text, p_date: info.iso, p_days: days, p_time: time, p_note: note });
     }
 
     function cancelEdit() {
@@ -1882,7 +2136,12 @@
             backToCalendar();
         } else if (action === "theme") {
             setTheme(isDark() ? "light" : "dark", true);
-            el.innerHTML = themeLabel();
+            el.setAttribute("aria-label", themeLabel());
+            el.setAttribute("title", themeLabel());
+        } else if (action === "clean") {
+            cleanScreen();
+        } else if (action === "move") {
+            moveTask(id, idx, parseInt(el.getAttribute("data-dir"), 10));
         } else if (action === "font-down" || action === "font-up") {
             setFontStep(state.fontStep + (action === "font-up" ? 1 : -1), true);
         } else if (action === "open") {
@@ -1931,6 +2190,10 @@
             state.pickNight = true;
             keepInput(formInputId(), rerenderOpen);
             focusById("tph-0");
+        } else if (action === "pick-fine") {
+            state.pickFine = true;
+            keepInput(formInputId(), rerenderOpen);
+            focusById("tpm-5");
         } else if (action === "pick-clear") {
             setPickFrom(null);
             keepInput(formInputId(), rerenderOpen);
@@ -1969,7 +2232,9 @@
         if (kind === "add") {
             addTask(text, time);
         } else if (kind === "edit") {
-            saveEdit(parseInt(form.getAttribute("data-id"), 10), text, time);
+            var noteEl = document.getElementById("edit-note");
+            var note = noteEl ? noteEl.value.replace(/^\s+|\s+$/g, "") : "";
+            saveEdit(parseInt(form.getAttribute("data-id"), 10), text, time, note || null);
         }
         return false;
     };
