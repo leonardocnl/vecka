@@ -32,23 +32,8 @@
     --color-accent: #c4f000; /* verde ácido: só preenchimento ou texto sobre painel */
     --color-on-accent: #1e1e1e; /* texto e ícones sobre o verde */
 
-    /* relevo: as únicas sombras permitidas (docs/design.md, "Relevo") */
+    /* relevo: as sombras ficam em @layer base, porque dependem do material (placa ou painel) */
     --shadow-*: initial;
-    --shadow-elev-plate:
-        inset 0 1px 0 #ffffff, 0 0 0 1px var(--color-plate-ring), 0 4px 12px rgb(40 30 10 / 0.1);
-    --shadow-elev-panel:
-        inset 0 1px 0 #3c3c39, 0 0 0 1px var(--color-panel-ring), 0 4px 12px rgb(0 0 0 / 0.22);
-    --shadow-elev-dock:
-        inset 0 1px 0 #3c3c39, 0 0 0 1px var(--color-panel-ring), 0 8px 20px rgb(0 0 0 / 0.28);
-    --shadow-key-light: 0 0 0 1px rgb(30 30 30 / 0.1), 0 1px 2px rgb(40 30 10 / 0.1);
-    --shadow-key-dark: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-key-accent: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-pressed: inset 0 1px 2px rgb(0 0 0 / 0.28);
-    --shadow-sunken: inset 0 1px 2px rgb(40 30 10 / 0.18), 0 0 0 1px var(--color-plate-ring);
-    --shadow-sunken-dark: inset 0 1px 3px rgb(0 0 0 / 0.45);
-    --shadow-sheet: inset 0 1px 0 #ffffff, 0 -6px 24px rgb(30 20 5 / 0.25);
-    --shadow-popover:
-        inset 0 1px 0 #ffffff, 0 0 0 1px var(--color-plate-ring), 0 12px 30px rgb(40 30 10 / 0.22);
 
     /* fontes (as variáveis vêm do next/font, em layout.tsx) */
     --font-*: initial;
@@ -66,6 +51,26 @@
 }
 
 @layer base {
+    /*
+     * Relevo: o conjunto fechado de sombras (docs/design.md, "Relevo"). A luz vem de cima: brilho
+     * de 1px na borda de cima, sombra para baixo, mesma direção e desfoque em tudo. Tecla sobe,
+     * campo afunda, o que está escolhido afunda. Os ingredientes mudam com o tema; o brilho, o
+     * contorno e o fundo dos campos mudam com o material (placa marfim ou painel grafite).
+     */
+    :root,
+    .light {
+        --plate-hi: #ffffff;
+        --plate-sink: rgb(40 30 10 / 0.18);
+        --panel-hi: rgb(255 255 255 / 0.09);
+        --panel-sink: rgb(0 0 0 / 0.45);
+        --drop-key: rgb(40 30 10 / 0.14);
+        --drop-key-dark: rgb(0 0 0 / 0.4);
+        --drop-plate: rgb(40 30 10 / 0.12);
+        --drop-float: rgb(40 30 10 / 0.24);
+        --press: rgb(0 0 0 / 0.28);
+        /* cursor: verde só onde ele aparece (1,06:1 sobre o campo marfim claro) */
+        --plate-caret: var(--color-ink);
+    }
     /* tema escuro (do V3Noturno): pelo sistema (AUTO) ou fixado nos ajustes */
     @media (prefers-color-scheme: dark) {
         :root:not(.light) {
@@ -85,28 +90,21 @@
             --color-done-text: #a3a29e;
             --color-rule-dashed: #3e3e3b;
             --color-tick-minor: #4a4a46;
-            --shadow-elev-plate:
-                inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px var(--color-plate-ring),
-                0 4px 12px rgb(0 0 0 / 0.4);
-            --shadow-elev-panel:
-                inset 0 1px 0 rgb(255 255 255 / 0.05), 0 0 0 1px var(--color-panel-ring),
-                0 4px 12px rgb(0 0 0 / 0.4);
-            --shadow-elev-dock:
-                inset 0 1px 0 rgb(255 255 255 / 0.05), 0 0 0 1px var(--color-panel-ring),
-                0 8px 20px rgb(0 0 0 / 0.5);
-            --shadow-key-light: 0 0 0 1px var(--color-plate-ring), 0 1px 2px rgb(0 0 0 / 0.4);
-            --shadow-key-dark: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px rgb(0 0 0 / 0.6);
-            --shadow-key-accent: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 1px 2px rgb(0 0 0 / 0.6);
-            --shadow-pressed: inset 0 1px 2px rgb(0 0 0 / 0.35);
-            --shadow-sunken: inset 0 1px 3px rgb(0 0 0 / 0.45);
-            --shadow-sunken-dark: inset 0 1px 3px rgb(0 0 0 / 0.6);
-            --shadow-sheet: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 -6px 24px rgb(0 0 0 / 0.5);
-            --shadow-popover:
-                inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px var(--color-plate-ring),
-                0 12px 30px rgb(0 0 0 / 0.5);
+            --plate-hi: rgb(255 255 255 / 0.06);
+            --plate-sink: rgb(0 0 0 / 0.45);
+            --panel-hi: rgb(255 255 255 / 0.05);
+            --panel-sink: rgb(0 0 0 / 0.6);
+            --drop-key: rgb(0 0 0 / 0.4);
+            --drop-key-dark: rgb(0 0 0 / 0.6);
+            --drop-plate: rgb(0 0 0 / 0.4);
+            --drop-float: rgb(0 0 0 / 0.55);
+            --press: rgb(0 0 0 / 0.35);
+            --plate-caret: var(--color-accent);
+            --plate-caret: var(--color-accent);
         }
     }
-    :root.dark {
+    :root.dark,
+    .dark {
         --color-paper: #1a1a19;
         --color-plate: #262624;
         --color-plate-ring: #333331;
@@ -123,25 +121,82 @@
         --color-done-text: #a3a29e;
         --color-rule-dashed: #3e3e3b;
         --color-tick-minor: #4a4a46;
-        --shadow-elev-plate:
-            inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px var(--color-plate-ring),
-            0 4px 12px rgb(0 0 0 / 0.4);
-        --shadow-elev-panel:
-            inset 0 1px 0 rgb(255 255 255 / 0.05), 0 0 0 1px var(--color-panel-ring),
-            0 4px 12px rgb(0 0 0 / 0.4);
-        --shadow-elev-dock:
-            inset 0 1px 0 rgb(255 255 255 / 0.05), 0 0 0 1px var(--color-panel-ring),
-            0 8px 20px rgb(0 0 0 / 0.5);
-        --shadow-key-light: 0 0 0 1px var(--color-plate-ring), 0 1px 2px rgb(0 0 0 / 0.4);
-        --shadow-key-dark: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px rgb(0 0 0 / 0.6);
-        --shadow-key-accent: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 1px 2px rgb(0 0 0 / 0.6);
-        --shadow-pressed: inset 0 1px 2px rgb(0 0 0 / 0.35);
-        --shadow-sunken: inset 0 1px 3px rgb(0 0 0 / 0.45);
-        --shadow-sunken-dark: inset 0 1px 3px rgb(0 0 0 / 0.6);
-        --shadow-sheet: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 -6px 24px rgb(0 0 0 / 0.5);
-        --shadow-popover:
-            inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px var(--color-plate-ring),
-            0 12px 30px rgb(0 0 0 / 0.5);
+        --plate-hi: rgb(255 255 255 / 0.06);
+        --plate-sink: rgb(0 0 0 / 0.45);
+        --panel-hi: rgb(255 255 255 / 0.05);
+        --panel-sink: rgb(0 0 0 / 0.6);
+        --drop-key: rgb(0 0 0 / 0.4);
+        --drop-key-dark: rgb(0 0 0 / 0.6);
+        --drop-plate: rgb(0 0 0 / 0.4);
+        --drop-float: rgb(0 0 0 / 0.55);
+        --press: rgb(0 0 0 / 0.35);
+        --plate-caret: var(--color-accent);
+    }
+    /* um bloco claro dentro do escuro (só a página /dev/sombras usa) */
+    .light {
+        --color-paper: #e7e4dc;
+        --color-plate: #f3f1eb;
+        --color-plate-ring: #cfcbc2;
+        --color-panel: #232321;
+        --color-panel-ring: #151514;
+        --color-key-dark: #3a3a37;
+        --color-sunken: #e9e6de;
+        --color-sunken-dark: #2b2b28;
+        --color-flap-top: #2b2b28;
+        --color-flap-gap: #0e0e0d;
+        --color-ink: #1e1e1e;
+        --color-muted: #4f4e4b;
+        --color-index: #5c5b58;
+        --color-done-text: #575653;
+        --color-rule-dashed: #c4c1b9;
+        --color-tick-minor: #55554f;
+    }
+
+    /* material placa (padrão) e material painel; as sombras são declaradas em cada um */
+    :root,
+    .light,
+    .dark,
+    .dial,
+    .dock,
+    .toast {
+        --edge-hi: var(--plate-hi);
+        --edge-ring: var(--color-plate-ring);
+        --sink: var(--plate-sink);
+        --caret: var(--plate-caret);
+        --shadow-key:
+            inset 0 1px 0 var(--edge-hi), 0 0 0 1px var(--edge-ring), 0 1px 2px var(--drop-key);
+        --shadow-key-dark: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px var(--drop-key-dark);
+        --shadow-key-accent: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 1px 2px var(--drop-key-dark);
+        --shadow-pressed: inset 0 1px 2px var(--press);
+        --shadow-field: inset 0 1px 2px var(--sink), 0 0 0 1px var(--edge-ring);
+        --shadow-field-focus:
+            inset 0 1px 2px var(--sink), inset 0 2px 8px var(--sink), 0 0 0 1px var(--edge-ring);
+        --shadow-plate:
+            inset 0 1px 0 var(--edge-hi), 0 0 0 1px var(--edge-ring), 0 4px 12px var(--drop-plate);
+        --shadow-float:
+            inset 0 1px 0 var(--edge-hi), 0 0 0 1px var(--edge-ring), 0 8px 24px var(--drop-float);
+        /* foco por teclado: contorno fino na cor do texto do material */
+        --focus-ring: var(--color-ink);
+    }
+    .dial,
+    .dock,
+    .toast {
+        --edge-hi: var(--panel-hi);
+        --edge-ring: var(--color-panel-ring);
+        --sink: var(--panel-sink);
+        --caret: var(--color-accent);
+        --focus-ring: var(--color-ink-on-panel);
+    }
+
+    /*
+     * Distância de baixo das peças flutuantes (barra, folha, desfazer): o espaçamento do design mais
+     * a área segura do iPhone. Com o teclado aberto (classe kb, ver Week.tsx), 8 acima dele.
+     */
+    :root {
+        --float-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+    :root.kb {
+        --float-bottom: calc(var(--kb) + 8px);
     }
 
     html {
@@ -161,21 +216,31 @@
         border: 0;
         padding: 0;
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
     }
     button:disabled {
         cursor: default;
     }
 
-    /* foco só no teclado: verde com anel grafite, legível sobre papel e sobre painel */
+    /*
+     * Foco: só no teclado (:focus-visible), contorno fino na cor do texto, afastado da peça. Nada
+     * de verde em volta. Campos de texto não têm contorno: afundam mais e o cursor fica verde.
+     */
     :focus-visible {
-        outline: 3px solid var(--color-accent);
+        outline: 2px solid var(--focus-ring);
         outline-offset: 2px;
-        box-shadow: 0 0 0 2px var(--color-panel);
+    }
+    input,
+    textarea {
+        caret-color: var(--caret);
+    }
+    input:focus,
+    textarea:focus {
+        outline: none;
     }
     /* títulos recebem foco por programa (trocar de dia ou de tela): sem contorno */
     h2:focus {
         outline: none;
-        box-shadow: none;
     }
 }
 
@@ -222,7 +287,9 @@
         max-width: 720px;
         margin: 0 auto;
         box-sizing: border-box;
-        padding: max(56px, calc(env(safe-area-inset-top) + 16px)) 16px 120px 16px;
+        /* embaixo: a barra (64) + a distância dela + 16, para a última tarefa nunca ficar atrás */
+        padding: max(56px, calc(env(safe-area-inset-top) + 16px)) 16px
+            calc(var(--float-bottom) + 80px) 16px;
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -257,6 +324,10 @@
         align-items: center;
         gap: 12px;
         height: 48px;
+    }
+    .backbar {
+        display: flex;
+        margin-top: -8px;
     }
     .topbar .wordmark {
         width: 134px;
@@ -298,7 +369,7 @@
         padding: 0 18px 0 12px;
         border-radius: 22px;
         background: var(--color-plate);
-        box-shadow: var(--shadow-key-light);
+        box-shadow: var(--shadow-key);
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -326,7 +397,7 @@
         background: var(--color-plate);
         border-radius: 24px;
         padding: 8px 18px 10px 18px;
-        box-shadow: var(--shadow-popover);
+        box-shadow: var(--shadow-float);
     }
     .ruler {
         display: flex;
@@ -375,7 +446,7 @@
         height: 44px;
         border-radius: 22px;
         background: var(--color-plate);
-        box-shadow: var(--shadow-key-light);
+        box-shadow: var(--shadow-key);
         font-family: var(--font-title);
         font-weight: 700;
         font-size: 13px;
@@ -393,7 +464,7 @@
         height: 44px;
         border-radius: 22px;
         background: var(--color-sunken);
-        box-shadow: var(--shadow-sunken);
+        box-shadow: var(--shadow-field);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -414,15 +485,15 @@
     .segmented {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        height: 44px;
-        border-radius: 22px;
+        height: 52px;
+        border-radius: 26px;
         background: var(--color-sunken);
-        box-shadow: var(--shadow-sunken);
+        box-shadow: var(--shadow-field);
         padding: 4px;
         box-sizing: border-box;
     }
     .segmented button {
-        border-radius: 18px;
+        border-radius: 22px;
         font-family: var(--font-title);
         font-weight: 700;
         font-size: 11px;
@@ -432,7 +503,7 @@
     .segmented button[aria-checked="true"] {
         background: var(--color-panel);
         color: var(--color-accent);
-        box-shadow: var(--shadow-key-dark);
+        box-shadow: var(--shadow-pressed);
     }
     .settings-hint {
         margin: 6px 0 0 0;
@@ -488,7 +559,7 @@
         color: var(--color-ink-on-panel);
         border-radius: 24px;
         padding: 12px 10px 0 10px;
-        box-shadow: var(--shadow-elev-panel);
+        box-shadow: var(--shadow-plate);
     }
     .dial-days {
         display: grid;
@@ -565,7 +636,7 @@
         background: var(--color-plate);
         border-radius: 24px;
         padding: 18px 18px 6px 18px;
-        box-shadow: var(--shadow-elev-plate);
+        box-shadow: var(--shadow-plate);
     }
     .card-head {
         display: flex;
@@ -699,9 +770,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
+        width: 44px;
         height: 44px;
-        margin: 0 -8px;
+        margin: 0 -10px;
     }
     .box svg {
         display: none;
@@ -776,7 +847,7 @@
         border: 0;
         border-radius: 16px;
         background: var(--color-sunken);
-        box-shadow: var(--shadow-sunken);
+        box-shadow: var(--shadow-field);
     }
     .task.open .task-text {
         font-weight: 600;
@@ -785,7 +856,8 @@
         border-bottom: 0;
     }
     .task-note {
-        margin: 0 0 14px 40px;
+        /* na coluna do texto: número 16 + 12 + caixa 24 + 12 */
+        margin: 0 0 14px 64px;
         font-size: 15px;
         line-height: 1.45;
         color: var(--color-muted);
@@ -795,15 +867,16 @@
     .task-actions {
         display: flex;
         gap: 8px;
-        margin-left: 40px;
+        margin-left: 64px;
+        flex-wrap: wrap;
     }
     .key-sm {
-        height: 40px;
-        min-width: 40px;
+        height: 44px;
+        min-width: 44px;
         padding: 0 16px;
-        border-radius: 20px;
+        border-radius: 22px;
         background: var(--color-plate);
-        box-shadow: var(--shadow-key-light);
+        box-shadow: var(--shadow-key);
         font-size: 14px;
     }
     .key-sm.sq {
@@ -812,7 +885,7 @@
     }
     .task-actions .remove {
         margin-left: auto;
-        height: 40px;
+        height: 44px;
         padding: 0 14px;
         font-size: 14px;
         color: var(--color-muted);
@@ -826,10 +899,10 @@
     .dock {
         position: fixed;
         z-index: 10;
-        left: 12px;
-        right: 12px;
-        bottom: max(23px, env(safe-area-inset-bottom));
-        max-width: 696px;
+        left: 16px;
+        right: 16px;
+        bottom: var(--float-bottom);
+        max-width: 688px;
         margin: 0 auto;
         background: var(--color-panel);
         border-radius: 32px;
@@ -837,7 +910,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        box-shadow: var(--shadow-elev-dock);
+        box-shadow: var(--shadow-float);
     }
     .dock-field {
         flex: 1;
@@ -850,16 +923,10 @@
         padding: 0 20px;
         font: inherit;
         font-size: 16px;
-        box-shadow: var(--shadow-sunken-dark);
+        box-shadow: var(--shadow-field);
     }
     .dock-field::placeholder {
         color: var(--color-muted-panel);
-    }
-    .dock-field:focus {
-        outline: none;
-    }
-    .dock-field:focus-visible {
-        outline: 3px solid var(--color-accent);
     }
     .dock-key {
         flex: none;
@@ -908,7 +975,7 @@
         height: 48px;
         border-radius: 24px;
         background: var(--color-sunken-dark);
-        box-shadow: var(--shadow-sunken-dark);
+        box-shadow: var(--shadow-field);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -926,7 +993,7 @@
         z-index: 11;
         left: 16px;
         right: 16px;
-        bottom: calc(max(23px, env(safe-area-inset-bottom)) + 80px);
+        bottom: calc(var(--float-bottom) + 72px);
         display: flex;
         justify-content: center;
         pointer-events: none;
@@ -941,7 +1008,7 @@
         border-radius: 22px;
         background: var(--color-panel);
         color: var(--color-ink-on-panel);
-        box-shadow: var(--shadow-elev-panel);
+        box-shadow: var(--shadow-float);
         font-size: 15px;
     }
     .toast-text {
@@ -959,20 +1026,26 @@
 
     /* ===== Folha de baixo (editar / nova tarefa) ===== */
     .sheet {
+        /* solta sobre a tela: margem dos lados e embaixo, quatro cantos, largura da coluna */
         position: fixed;
-        inset: auto 0 0 0;
-        width: 100%;
-        max-width: 720px;
-        max-height: 92dvh;
+        inset: auto 16px var(--float-bottom) 16px;
+        width: auto;
+        max-width: 688px;
+        max-height: calc(100dvh - var(--float-bottom) - max(16px, env(safe-area-inset-top)));
         margin: 0 auto;
         box-sizing: border-box;
         border: 0;
-        border-radius: 28px 28px 0 0;
+        border-radius: 28px;
         background: var(--color-plate);
         color: var(--color-ink);
-        padding: 10px 16px max(30px, env(safe-area-inset-bottom)) 16px;
-        box-shadow: var(--shadow-sheet);
+        padding: 8px 16px 16px 16px;
+        box-shadow: var(--shadow-float);
         overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+    /* com o teclado: cabe na área visível que sobra acima dele */
+    :root.kb .sheet {
+        max-height: calc(var(--vvh) - 16px);
     }
     .sheet::backdrop {
         background: color-mix(in srgb, var(--color-panel) 40%, transparent);
@@ -997,7 +1070,7 @@
         border-radius: 24px;
         border: 0;
         background: var(--color-sunken);
-        box-shadow: var(--shadow-sunken);
+        box-shadow: var(--shadow-field);
         padding: 0 20px;
         font: inherit;
         font-size: 17px;
@@ -1011,11 +1084,10 @@
         line-height: 1.45;
         resize: none;
     }
-    .field:focus {
-        outline: none;
-    }
-    .field:focus-visible {
-        outline: 3px solid var(--color-accent);
+    /* foco no campo: afunda mais (sem contorno; o cursor verde vem da base) */
+    .field:focus,
+    .dock-field:focus {
+        box-shadow: var(--shadow-field-focus);
     }
     .time-chip {
         order: 2;
@@ -1044,10 +1116,10 @@
         font-size: 13px;
     }
     .grid-keys button {
-        height: 40px;
+        height: 44px;
         border-radius: 12px;
         background: var(--color-plate);
-        box-shadow: var(--shadow-key-light);
+        box-shadow: var(--shadow-key);
     }
     .grid-keys button[aria-pressed="true"] {
         background: var(--color-accent);
@@ -1055,7 +1127,7 @@
         box-shadow: var(--shadow-pressed);
     }
     .grid-keys.seven button {
-        border-radius: 20px;
+        border-radius: 22px;
     }
     /* repetir: escolhido = tecla escura afundada */
     .grid-keys.seven button[aria-pressed="true"] {
@@ -1069,20 +1141,25 @@
         color: var(--color-muted);
     }
     .sheet-links button {
-        min-height: 40px;
+        min-height: 44px;
         text-decoration: underline;
     }
+    /* presas ao pé da folha: Salvar nunca fica escondido na rolagem */
     .sheet-actions {
+        position: sticky;
+        bottom: 0;
         display: flex;
         gap: 8px;
-        margin-top: 6px;
+        margin: 6px 0 -16px 0;
+        padding: 8px 0 16px 0;
+        background: var(--color-plate);
     }
     .sheet-actions button {
         flex: 1;
         height: 48px;
         border-radius: 24px;
         background: var(--color-plate);
-        box-shadow: var(--shadow-key-light);
+        box-shadow: var(--shadow-key);
         font-size: 16px;
     }
     .sheet-actions .save {
@@ -1232,7 +1309,7 @@
         position: absolute;
         left: 16px;
         right: 16px;
-        bottom: max(40px, env(safe-area-inset-bottom));
+        bottom: calc(32px + env(safe-area-inset-bottom));
         display: flex;
         flex-direction: column;
         gap: 14px;
@@ -1242,7 +1319,7 @@
         border-radius: 28px;
         background: var(--color-panel);
         color: var(--color-ink-on-panel);
-        box-shadow: var(--shadow-elev-panel);
+        box-shadow: var(--shadow-key-dark);
         font-size: 17px;
         font-weight: 600;
         display: flex;
@@ -1259,5 +1336,78 @@
     }
     .signin .notice {
         align-self: center;
+    }
+
+    /* ===== Toque: a tecla afunda enquanto é pressionada ===== */
+    :is(
+            .knob,
+            .key-light,
+            .font-key,
+            .key-sm,
+            .dock-key,
+            .grid-keys button,
+            .sheet-actions button,
+            .signin-btn,
+            .cal-day,
+            .segmented button
+        ):active:not(:disabled) {
+        box-shadow: var(--shadow-pressed);
+    }
+    :is(
+        .dial-day,
+        .task-text,
+        .box-btn,
+        .remove,
+        .text-link,
+        .toast-btn,
+        .sheet-links button
+    ):active {
+        opacity: 0.6;
+    }
+
+    /* ===== /dev/sombras (só desenvolvimento) ===== */
+    .dev-sheet {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        min-height: 100dvh;
+    }
+    .dev-col {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px 8px 32px 8px;
+        background: var(--color-paper);
+        color: var(--color-ink);
+    }
+    .dev-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px 8px;
+    }
+    .dev-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .dev-stack .field,
+    .dev-stack .dock-field {
+        min-width: 0;
+        flex: none;
+        padding: 0 16px;
+    }
+    .dev-focus {
+        box-shadow: var(--shadow-field-focus);
+    }
+    .dev-day {
+        width: 48px;
+    }
+    .dev-float {
+        padding: 24px 16px;
+        border-radius: 24px;
+        background: var(--color-plate);
+        box-shadow: var(--shadow-float);
+        font-size: 14px;
     }
 }

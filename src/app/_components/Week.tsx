@@ -300,6 +300,27 @@ export function Week(props: actions.Week) {
         };
     }, [timeZone, today, load, canAutoLoad]);
 
+    // teclado do iPhone: o Safari não encolhe a página, só a área visível. A barra de baixo e a
+    // folha sobem junto (--kb = o quanto o teclado cobre; --vvh = a altura que sobra).
+    useEffect(() => {
+        const vv = window.visualViewport;
+        if (!vv) return;
+        const root = document.documentElement;
+        const update = () => {
+            const kb = Math.round(window.innerHeight - vv.height - vv.offsetTop);
+            root.classList.toggle("kb", kb > 0);
+            root.style.setProperty("--kb", `${Math.max(0, kb)}px`);
+            root.style.setProperty("--vvh", `${Math.round(vv.height)}px`);
+        };
+        update();
+        vv.addEventListener("resize", update);
+        vv.addEventListener("scroll", update);
+        return () => {
+            vv.removeEventListener("resize", update);
+            vv.removeEventListener("scroll", update);
+        };
+    }, []);
+
     // ---------- histórico do mês visível ----------
 
     // do começo do mês (ou da conta) até ontem
@@ -698,6 +719,14 @@ export function Week(props: actions.Week) {
         </>
     );
 
+    // o mesmo topo em todas as telas: wordmark à esquerda, botão giratório à direita
+    const header = (
+        <header className="topbar">
+            <Wordmark />
+            {knob}
+        </header>
+    );
+
     const status = (
         <div id="status" className="status" role="status" aria-live="polite">
             {error && (
@@ -940,10 +969,7 @@ export function Week(props: actions.Week) {
 
     const renderWeek = () => (
         <>
-            <header className="topbar">
-                <Wordmark />
-                {knob}
-            </header>
+            {header}
             {status}
             <nav className="dial" aria-label="Escolher o dia">
                 <div className="dial-days">
@@ -984,13 +1010,13 @@ export function Week(props: actions.Week) {
         const month = MONTHS[cal.m]!;
         return (
             <>
-                <header className="topbar">
+                {header}
+                <nav className="backbar">
                     <button type="button" className="key-light" id="back-btn" onClick={backToWeek}>
                         <ChevronLeft />
                         Semana
                     </button>
-                    {knob}
-                </header>
+                </nav>
                 {status}
                 <main>
                     <section className="card cal-card" aria-labelledby="cal-title">
@@ -1098,13 +1124,13 @@ export function Week(props: actions.Week) {
     // dia aberto pelo calendário: passado (só consulta, sem barra) ou distante (com barra)
     const renderDayView = () => (
         <>
-            <header className="topbar">
+            {header}
+            <nav className="backbar">
                 <button type="button" className="key-light" id="back-btn" onClick={backToCalendar}>
                     <ChevronLeft />
                     Calendário
                 </button>
-                {knob}
-            </header>
+            </nav>
             {status}
             <main>{renderCard(dayIdx)}</main>
             {dayIdx >= 0 && addDock}

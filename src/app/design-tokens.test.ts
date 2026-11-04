@@ -38,3 +38,23 @@ describe("nomes de container", () => {
         expect([...names("container")].filter((n) => spacing.has(n))).toEqual([]);
     });
 });
+
+// Relevo (docs/design.md): um conjunto fechado de sombras. Todo box-shadow usa um desses tokens.
+describe("sombras", () => {
+    it("todo box-shadow do globals.css é um token do Relevo", () => {
+        const css = readFileSync(join(appDir, "globals.css"), "utf8");
+        const allowed = [
+            "key",
+            "key-dark",
+            "key-accent",
+            "pressed",
+            "field",
+            "field-focus",
+            "plate",
+            "float",
+        ].map((name) => `var(--shadow-${name})`);
+        const used = [...css.matchAll(/box-shadow:\s*([^;]+);/g)].map((m) => m[1]!.trim());
+        expect(used.length).toBeGreaterThan(0);
+        expect(used.filter((value) => !allowed.includes(value))).toEqual([]);
+    });
+});
