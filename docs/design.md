@@ -59,27 +59,61 @@ grão claro e opacidade 0,35 (ver `RadioIII.dc.html` e `V3Noturno.dc.html`). Sem
 
 ## Relevo (as únicas sombras permitidas)
 
-| Nome         | Onde                                       | Receita (`box-shadow`)                                                                                       |
-| ------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `elev-plate` | placas marfim                              | `inset 0 1px 0 #FFF, 0 0 0 1px plate-ring, 0 4px 12px rgba(40,30,10,.10)`                                    |
-| `elev-panel` | painéis grafite (dial)                     | `inset 0 1px 0 #3C3C39, 0 0 0 1px panel-ring, 0 4px 12px rgba(0,0,0,.22)`                                    |
-| `elev-dock`  | barra inferior flutuante                   | `inset 0 1px 0 #3C3C39, 0 0 0 1px panel-ring, 0 8px 20px rgba(0,0,0,.28)`                                    |
-| `key-light`  | tecla clara sobre placa/papel              | `0 0 0 1px rgba(30,30,30,.10), 0 1px 2px rgba(40,30,10,.10)`                                                 |
-| `key-dark`   | tecla escura, botão giratório, placa flap  | `inset 0 1px 0 rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.40)`                                             |
-| `key-accent` | tecla verde                                | `inset 0 1px 0 rgba(255,255,255,.45), 0 1px 2px rgba(0,0,0,.40)`                                             |
-| `pressed`    | tarefa feita, opção escolhida, tecla ativa | `inset 0 1px 2px rgba(0,0,0,.28)` — **aprovado pelo Leonardo, é a referência**                               |
-| `sunken`     | campos                                     | claro: `inset 0 1px 2px rgba(40,30,10,.18), 0 0 0 1px plate-ring`; escuro: `inset 0 1px 3px rgba(0,0,0,.45)` |
-| `sheet`      | folha que sobe de baixo                    | `inset 0 1px 0 #FFF, 0 -6px 24px rgba(30,20,5,.25)`                                                          |
-| `popover`    | painel de ajustes                          | `inset 0 1px 0 #FFF, 0 0 0 1px plate-ring, 0 12px 30px rgba(40,30,10,.22)`                                   |
+Um conjunto fechado de oito sombras, em `globals.css` (`--shadow-*`). Nenhum `box-shadow` fora
+delas (o teste `design-tokens.test.ts` confere). **A luz vem de cima:** brilho de 1 px na borda de
+cima, sombra para baixo, a mesma direção e o mesmo desfoque em todas as telas e nos dois temas.
+**Tecla sobe, campo afunda, o que está escolhido afunda.**
 
-Regra: **tecla sobe, campo desce, escolhido afunda.** Nada de sombra fora desta tabela.
+| Nome          | Onde                                                                    | Receita (claro)                                                           |
+| ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `key`         | tecla clara (Semana, Editar, ↑ ↓, grades da folha, Cancelar, A A)       | `inset 0 1px 0 brilho, 0 0 0 1px contorno, 0 1px 2px rgba(40,30,10,.14)`  |
+| `key-dark`    | tecla escura: dock, botão giratório, Entrar, hoje no calendário, placas | `inset 0 1px 0 rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.40)`          |
+| `key-accent`  | tecla verde: "+", "›", Salvar                                           | `inset 0 1px 0 rgba(255,255,255,.45), 0 1px 2px rgba(0,0,0,.40)`          |
+| `pressed`     | tarefa feita, opção escolhida, tema escolhido, tecla durante o toque    | `inset 0 1px 2px rgba(0,0,0,.28)` — **aprovado, é a referência**          |
+| `field`       | campos, trilhos (tamanho do texto, tema), tarefa aberta                 | `inset 0 1px 2px fundo, 0 0 0 1px contorno`                               |
+| `field-focus` | campo de texto focado: afunda mais                                      | `inset 0 1px 2px fundo, inset 0 2px 8px fundo, 0 0 0 1px contorno`        |
+| `plate`       | placas e painéis em repouso (card, calendário, dial)                    | `inset 0 1px 0 brilho, 0 0 0 1px contorno, 0 4px 12px rgba(40,30,10,.12)` |
+| `float`       | o que flutua sobre o conteúdo: dock, folha, ajustes, "desfazer"         | `inset 0 1px 0 brilho, 0 0 0 1px contorno, 0 8px 24px rgba(40,30,10,.24)` |
+
+Brilho, contorno e fundo dependem do **material**:
+
+| Material        | brilho                  | contorno     | fundo do campo       |
+| --------------- | ----------------------- | ------------ | -------------------- |
+| placa (claro)   | `#FFF`                  | `plate-ring` | `rgba(40,30,10,.18)` |
+| painel (claro)  | `rgba(255,255,255,.09)` | `panel-ring` | `rgba(0,0,0,.45)`    |
+| placa (escuro)  | `rgba(255,255,255,.06)` | `plate-ring` | `rgba(0,0,0,.45)`    |
+| painel (escuro) | `rgba(255,255,255,.05)` | `panel-ring` | `rgba(0,0,0,.60)`    |
+
+No escuro as quedas usam preto: `key` .40, `key-dark`/`key-accent` .60, `plate` .40, `float` .55,
+`pressed` .35. A página `/dev/sombras` (só em desenvolvimento) mostra todas lado a lado nos dois
+temas.
+
+## Foco
+
+- **Campos de texto** (texto da tarefa, nota, adicionar tarefa): nada de contorno, borda ou anel.
+  Focado, o campo **afunda mais** (`field-focus`) e o cursor fica verde (`accent`). Exceção: sobre
+  o campo marfim do tema claro o verde dá 1,06:1 e some; ali o cursor é `ink`.
+- **Botões e teclas**, só no teclado (`:focus-visible`, nunca no toque): contorno fino de 2 px na
+  cor do texto do material (`ink` sobre placa, `ink-on-panel` sobre painel), afastado 2 px. Sem
+  verde em volta.
+- **Toque:** a tecla afunda (`pressed`) enquanto é pressionada; links e textos tocáveis ficam com
+  opacidade 0,6.
 
 ## Formas e medidas
 
 - Raios: **6** (caixa da tarefa, etiquetas), **12** (placas de virar, dias do calendário, grade de
-  horário), **24** (placas, painéis, teclas pílula, campos), **28** (topo da folha).
-- Teclas: altura **48** (barra inferior, folha); **44** (topo, ajustes); **40** (grades dentro da
-  folha e ações dentro da tarefa aberta). Alvo de toque nunca abaixo de 40 de altura × 40.
+  horário), **24** (placas, painéis, teclas pílula, campos), **28** (folha, nos quatro cantos).
+  Tecla pílula = metade da altura.
+- Teclas: altura **48** (barra inferior, ações da folha); **44** em todo o resto (topo, ajustes,
+  grades da folha, ações da tarefa aberta). Alvo de toque nunca abaixo de 44 × 44.
+- **Topo:** o mesmo em todas as telas autenticadas (dia, dia passado, dia distante, calendário,
+  com a folha aberta por cima): wordmark 134×45 à esquerda e botão giratório à direita, abaixo da
+  área segura de cima. As teclas "‹ Semana" / "‹ Calendário" ficam numa linha logo abaixo dele.
+- **Peças flutuantes** (dock, folha, ajustes, "desfazer"): distância de baixo = 16 +
+  `env(safe-area-inset-bottom)`; com o teclado aberto, 8 acima dele (`visualViewport`). A folha
+  fica solta: 16 dos lados e embaixo, quatro cantos de 28, largura máxima da coluna (688),
+  altura máxima da área visível com rolagem interna. A lista ganha espaço embaixo para a última
+  tarefa nunca ficar atrás do dock. Alturas em `dvh`, nunca `vh`.
 - Margem lateral **16**; espaçamento em 8 / 16 / 24 / 32.
 - Tipografia: Space Mono Bold (datas, dias, horários, números, etiquetas técnicas em 10–11 px com
   letter-spacing 1–2 px); IBM Plex Sans (texto). Mantidos da v2.
@@ -113,14 +147,14 @@ Regra: **tecla sobe, campo desce, escolhido afunda.** Nada de sombra fora desta 
 - **Muda: "…" sai.** Tocar no **texto** da tarefa abre a tarefa no próprio card (fundo `sunken`):
   nota, **Editar**, **↑ ↓** (desativadas quando não se aplicam) e **Remover** (texto sublinhado).
   Tocar na caixa continua marcando.
-- **Muda: edição** vira uma **folha que sobe de baixo** (`sheet`), com campo de texto, nota,
+- **Muda: edição** vira uma **folha que sobe de baixo** (`float`), com campo de texto, nota,
   grade de hora (06–23, link "madrugada (00 a 05)" e "minutos de 5 em 5"), minutos
   :00/:15/:30/:45, repetir por dia (escolhido = tecla escura afundada) e Cancelar / **Salvar**.
 - **Muda: topo.** Wordmark (134×45) à esquerda e **um botão giratório** (44, `knob`, marquinha
-  verde) à direita, que abre o **painel de ajustes** (`popover`): tamanho do texto (A pequeno /
+  verde) à direita, que abre o **painel de ajustes** (`float`): tamanho do texto (A pequeno /
   indicador de 4 pontos / A grande), tema **AUTO · CLARO · ESCURO** (AUTO segue o iPhone, novo)
   e, embaixo, o e-mail da conta e "Sair". O link "sair" do topo e os ícones antigos saem.
-- **Muda: barra inferior** flutuante (`elev-dock`): campo "Adicionar tarefa..." (afundado), tecla
+- **Muda: barra inferior** flutuante (`float`): campo "Adicionar tarefa..." (afundado), tecla
   do calendário e **tecla verde "+"**. Respeita a área segura do iPhone.
 - **Calendário:** botão "‹ Semana" (tecla clara) e o botão giratório no topo; card marfim com
   placas de virar do **número do mês**, "NOVEMBRO", "2026 · 3 pendentes", régua "DIAS", grade de
@@ -138,8 +172,7 @@ Regra: **tecla sobe, campo desce, escolhido afunda.** Nada de sombra fora desta 
 - **Adicionar:** com texto no campo, "+" (ou Enter) adiciona direto, sem horário, só no dia
   mostrado. Com o campo vazio, "+" abre a mesma folha da edição com o título **NOVA TAREFA**
   (texto, hora, minutos, repetir; sem nota). Na folha, "sem horário" limpa a hora.
-- **Dia passado / distante:** topo igual ao do calendário (tecla clara "‹ Calendário" e o botão
-  giratório), sem dial. O distante mantém a barra de baixo para adicionar; o passado fica sem
+- **Dia passado / distante:** o topo de sempre e, abaixo, a tecla clara "‹ Calendário"; sem dial. O distante mantém a barra de baixo para adicionar; o passado fica sem
   barra.
 - **Calendário:** "N pendentes" = dias do mês, de hoje em diante, com tarefa avulsa não feita (a
   mesma regra do ponto). Dias anteriores à criação da conta ficam desativados (opacidade 0,4).
@@ -157,5 +190,5 @@ no card; folha subindo; painel de ajustes abrindo a partir do botão giratório.
 - Tarefa é `role="checkbox"` com `aria-checked`; botões só-símbolo têm `aria-label`.
 - Dial: cada dia é um botão com `aria-pressed` e rótulo "quarta 04, com tarefas".
 - Placas de virar: `role="img"` com o dia por extenso.
-- Contorno de foco só no teclado (`:focus-visible`), em `accent` com anel `panel` para contraste.
+- Contorno de foco só no teclado (`:focus-visible`), como em "Foco" acima.
 - Todo texto ≥ 4,5:1. Esc fecha folha/ajustes/tarefa aberta e volta uma tela.
