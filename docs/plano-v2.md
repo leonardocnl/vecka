@@ -11,7 +11,7 @@ A versão atual (`index.html` em ES5, modo demonstração) é a referência de c
 | Login          | **Google**, implementado à mão (OAuth 2.0 + PKCE) com sessões no banco, como no Kinne      |
 | Histórico      | **Guardar tudo**; dias passados abrem no calendário **só para consulta**                   |
 | Stack          | A mesma do Kinne (abaixo)                                                                  |
-| Hospedagem     | Vercel, projeto `vecka` → `vecka.vercel.app`                                               |
+| Hospedagem     | Vercel, projeto `vecka` → `dievecka.vercel.app`                                            |
 | Recursos novos | **Animações sutis**, **gestos de deslizar**, **lembrete no horário** (notificação)         |
 | Fora do escopo | Offline                                                                                    |
 | Kindle         | Depois, numa rota leve separada (`/kindle`, HTML do servidor, sem JS moderno)              |
@@ -71,7 +71,7 @@ A versão atual (`index.html` em ES5, modo demonstração) é a referência de c
 3. **Histórico** — dias passados em modo leitura no calendário.
 4. **Animações e gestos.**
 5. **Lembretes** — Web Push, permissão, envio no horário, agendador.
-6. **Produção** — deploy em `vecka.vercel.app`, revisão de segurança, `main`. Fixar o
+6. **Produção** — deploy em `dievecka.vercel.app`, revisão de segurança, `main`. Fixar o
    `redirect_uri` do OAuth numa variável `APP_URL` em vez de derivá-lo do `request.url`.
 7. **(Depois)** rota `/kindle`.
 
@@ -80,7 +80,7 @@ A versão atual (`index.html` em ES5, modo demonstração) é a referência de c
 1. **Neon:** criar o projeto `vecka` e copiar a connection string.
 2. **Google Cloud:** criar o cliente OAuth (tipo "Aplicativo da Web") e copiar o ID e o segredo.
    Origens/redirecionamentos: `http://localhost:3000/api/auth/google/callback` e, na fase 6,
-   `https://vecka.vercel.app/api/auth/google/callback`.
+   `https://dievecka.vercel.app/api/auth/google/callback`.
 3. **Vercel:** importar o repositório com o nome `vecka` (fase 6) e colar as variáveis de ambiente.
 4. **Fase 5:** criar a conta no agendador escolhido.
 
