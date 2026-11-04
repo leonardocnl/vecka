@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, Space_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const spaceMono = Space_Mono({
@@ -25,8 +26,16 @@ export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
     return (
-        <html lang="pt-BR" className={`${spaceMono.variable} ${ibmPlexSans.variable} antialiased`}>
-            <body className="min-h-dvh">{children}</body>
+        // o script de aparência muda a classe e o data-font do <html> antes da hidratação
+        <html
+            lang="pt-BR"
+            className={`${spaceMono.variable} ${ibmPlexSans.variable} antialiased`}
+            suppressHydrationWarning
+        >
+            <body className="min-h-dvh">
+                <Script src="/appearance.js" strategy="beforeInteractive" />
+                {children}
+            </body>
         </html>
     );
 }
