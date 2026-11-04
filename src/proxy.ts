@@ -14,5 +14,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
     // arquivos estáticos e ícones ficam de fora
-    matcher: ["/((?!_next/static|_next/image|.*\\.(?:png|svg|ico|webmanifest)$).*)"],
+    matcher: ["/((?!_next/static|_next/image|.*\\.(?:png|svg|ico|webmanifest|js|css|woff2?)$).*)"],
 };
