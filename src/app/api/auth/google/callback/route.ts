@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { completeGoogleSignIn } from "@/application/auth";
 import { OAUTH_COOKIE, SESSION_ABSOLUTE_DAYS, SESSION_COOKIE } from "@/domain/auth";
-import { googleConfig } from "@/infrastructure/auth/config";
+import { appUrl, googleConfig } from "@/infrastructure/auth/config";
 import {
     exchangeCode,
     googleKeys,
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const params = request.nextUrl.searchParams;
     const attempt = parseAttempt(request.cookies.get(OAUTH_COOKIE)?.value);
     const to = (path: string) => {
-        const response = NextResponse.redirect(new URL(path, request.url), 303);
+        const response = NextResponse.redirect(new URL(path, appUrl()), 303);
         // o cookie do OAuth vale para uma tentativa só
         response.cookies.set(OAUTH_COOKIE, "", { ...secureCookie, maxAge: 0 });
         response.headers.set("Cache-Control", "no-store");
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     try {
         const config = googleConfig();
-        const redirectUri = new URL("/api/auth/google/callback", request.url).toString();
+        const redirectUri = new URL("/api/auth/google/callback", appUrl()).toString();
         const result = await completeGoogleSignIn(
             {
                 repository: authRepository(),

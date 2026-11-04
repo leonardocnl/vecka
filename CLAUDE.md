@@ -11,7 +11,7 @@ Lista de tarefas da semana (hoje + 6 dias), feita para o iPhone (Safari e "Adici
 - **Runtime:** Node 24 (`.nvmrc`, `engines.node: "24.x"`). `@types/node` acompanha a versão do Node (hoje `^24`).
 - **Stack:** a mesma do Kinne: Next.js (App Router), React, TypeScript strict, Tailwind CSS 4, ESLint, Prettier, Vitest.
 - **Banco:** Postgres no Neon, via Drizzle ORM e `@neondatabase/serverless`. (Ainda não configurado.)
-- **Hospedagem:** Vercel (`vecka.vercel.app`), sem recursos exclusivos dela (nada de Vercel KV, Postgres, Blob ou Cron).
+- **Hospedagem:** Vercel (`dievecka.vercel.app`), sem recursos exclusivos dela (nada de Vercel KV, Postgres, Blob ou Cron).
 - **Arquitetura em camadas em `src/`:**
   - `domain`: regras puras, sem dependência de framework.
   - `application`: casos de uso.

@@ -19,3 +19,13 @@ export function googleConfig(env: Record<string, string | undefined> = process.e
     if (allowedEmails.size === 0) throw new Error("ALLOWED_EMAILS vazia");
     return { clientId, clientSecret, allowedEmails };
 }
+
+// Origem pública do app (ex.: https://dievecka.vercel.app). Toda URL absoluta sai daqui, nunca do
+// request.url, que vem do cabeçalho Host.
+export function appUrl(env: Record<string, string | undefined> = process.env): string {
+    const raw = env.APP_URL?.trim();
+    if (!raw) throw new Error("APP_URL não definida");
+    const url = new URL(raw);
+    if (url.origin !== raw.replace(/\/$/, "")) throw new Error("APP_URL deve ser só a origem");
+    return url.origin;
+}
