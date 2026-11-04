@@ -131,3 +131,9 @@ As built (phase 1):
 ## 15. Accepted risks
 
 - **`'unsafe-inline'` in `script-src`.** The Next.js runtime writes per-request inline scripts (`self.__next_f.push(...)`); only a per-request nonce would cover them, which forces dynamic rendering of every page. What still blocks: external script hosts, `eval`, `javascript:`/`data:` URLs, plugins, framing, base-tag injection, forms posted elsewhere. Mitigation: §5 and §6 (no `dangerouslySetInnerHTML`, user text always rendered as text). Revisit in phase 6.
+
+## 16. Known false positives
+
+Scanner alerts reviewed and dismissed as false positives, with the reason. Each one is re-checked if the code it points at changes.
+
+- **CodeQL `js/insufficient-password-hash` in `src/infrastructure/auth/google.ts` (`pkceChallenge`).** Dismissed 2026-11-03 as "false positive": PKCE `code_challenge` (RFC 7636 §4.2) is the SHA-256 of a 32-byte random, per-attempt `code_verifier`, not a password. The protocol requires S256; a slow password hash would break it.

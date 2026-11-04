@@ -27,7 +27,8 @@ A versão atual (`index.html` em ES5, modo demonstração) é a referência de c
 - Mesma base de segurança do Kinne (`docs/security.md` a criar a partir do dele): sem segredos no
   cliente, `server-only`, zod estrito em toda server action, CSP, erros genéricos, sem query params.
 - Dependências novas previstas, a confirmar com o Leonardo quando chegar a hora: `web-push`
-  (lembretes). Nenhuma outra sem perguntar.
+  (lembretes). **`zod` aprovado para a fase 2**, na mesma versão do Kinne (`^4.6.7`). Nenhuma
+  outra sem perguntar.
 
 ## Modelo de dados
 
@@ -70,7 +71,8 @@ A versão atual (`index.html` em ES5, modo demonstração) é a referência de c
 3. **Histórico** — dias passados em modo leitura no calendário.
 4. **Animações e gestos.**
 5. **Lembretes** — Web Push, permissão, envio no horário, agendador.
-6. **Produção** — deploy em `vecka.vercel.app`, revisão de segurança, `main`.
+6. **Produção** — deploy em `vecka.vercel.app`, revisão de segurança, `main`. Fixar o
+   `redirect_uri` do OAuth numa variável `APP_URL` em vez de derivá-lo do `request.url`.
 7. **(Depois)** rota `/kindle`.
 
 ## O que só o Leonardo pode fazer (contas e segredos)
