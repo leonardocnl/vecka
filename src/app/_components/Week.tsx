@@ -9,6 +9,7 @@ import {
     useState,
     type CSSProperties,
     type FormEvent,
+    type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
     addDays,
@@ -46,6 +47,7 @@ import {
 import * as actions from "@/app/_actions/tasks";
 import { signOut } from "@/app/_auth/actions";
 import { Wordmark } from "./Wordmark";
+import { dialSteps, resist, swipeClick, swipeDown, swipeEnd, swipeMove, taskSwipe } from "./swipe";
 import {
     applyFontStep,
     applyTheme,
@@ -152,13 +154,32 @@ export function DialScale({ sel }: { sel: number | null }) {
     );
 }
 
-/** Placas de virar com dois algarismos. */
+/**
+ * Placas de virar com dois algarismos. Quando o valor muda, a metade de cima do algarismo antigo
+ * cai por cima do novo (só CSS; com movimento reduzido, a troca é direta).
+ */
 function Flaps({ value, label, small }: { value: string; label: string; small?: boolean }) {
+    const [shown, setShown] = useState(value);
+    const [old, setOld] = useState<string | null>(null);
+    if (value !== shown) {
+        setOld(shown);
+        setShown(value);
+    }
     return (
         <div className={cx("flaps", !!small && "small")} role="img" aria-label={label}>
             {[...value].map((digit, i) => (
                 <span className="flap" key={i}>
-                    <span>{digit}</span>
+                    <span className="flap-digit">{digit}</span>
+                    {old && old[i] !== digit && (
+                        <span
+                            className="flap-leaf"
+                            key={old + value}
+                            aria-hidden="true"
+                            onAnimationEnd={() => setOld(null)}
+                        >
+                            <span className="flap-digit">{old[i]}</span>
+                        </span>
+                    )}
                 </span>
             ))}
         </div>
@@ -185,6 +206,8 @@ export function Week(props: actions.Week) {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [pending, setPending] = useState<PendingDelete | null>(null);
+    // o resultado dos gestos, para os leitores de tela
+    const [announce, setAnnounce] = useState("");
     // dia em que a conta foi criada: antes dele não há histórico
     const [since, setSince] = useState(props.since);
     const [email, setEmail] = useState(props.email);
@@ -738,6 +761,24 @@ export function Week(props: actions.Week) {
         </div>
     );
 
+    // tarefa: direita conclui (ou reabre), esquerda remove com o desfazer; antes do limite, volta
+    const endTaskSwipe = (
+        e: ReactPointerEvent<HTMLElement>,
+        task: Task,
+        idx: number,
+        done: boolean,
+    ) =>
+        swipeEnd(e, (dx, el) => {
+            el.classList.remove("swiping");
+            el.removeAttribute("data-dir");
+            el.removeAttribute("data-armed");
+            const result = dx === null ? null : taskSwipe(dx);
+            if (result === "done") {
+                toggleTask(task, idx);
+                setAnnounce(`${task.text}: ${done ? "reaberta" : "feita"}.`);
+            } else if (result === "remove") deleteTask(task);
+        });
+
     const renderTask = (task: Task, idx: number, n: number) => {
         const iso = dayIso(idx);
         const done = isDone(task, iso);
@@ -751,12 +792,36 @@ export function Week(props: actions.Week) {
             (task.note ? ", tem nota" : "");
         const movable = movableFor(tasks, iso);
         const pos = movable.findIndex((t) => t.id === task.id);
+        // deslizar: direita conclui (ou reabre), esquerda remove (com o desfazer). Equivale à caixa
+        // e ao Remover da tarefa aberta.
+        const canSwipe = !open && task.id > 0;
+        const swipe = canSwipe && {
+            onPointerDown: swipeDown,
+            onClickCapture: swipeClick,
+            onPointerMove: (e: ReactPointerEvent<HTMLElement>) =>
+                swipeMove(e, (dx, el) => {
+                    el.classList.add("swiping");
+                    el.style.setProperty("--dx", `${resist(dx)}px`);
+                    el.dataset.dir = dx > 0 ? "done" : "remove";
+                    el.toggleAttribute("data-armed", taskSwipe(dx) !== null);
+                }),
+            onPointerUp: (e: ReactPointerEvent<HTMLElement>) => endTaskSwipe(e, task, idx, done),
+            onPointerCancel: (e: ReactPointerEvent<HTMLElement>) =>
+                endTaskSwipe(e, task, idx, done),
+        };
         return (
             <div
                 key={task.id}
                 className={cx("task", done && "done", open && "open", task.id < 0 && "temp")}
                 id={`task-${task.id}`}
+                {...swipe}
             >
+                {canSwipe && (
+                    <span className="swipe-under" aria-hidden="true">
+                        <span className="swipe-done">{done ? "REABRIR" : "FEITA"}</span>
+                        <span className="swipe-remove">REMOVER</span>
+                    </span>
+                )}
                 <div className="task-row">
                     <span className="task-n" aria-hidden="true">
                         {pad2(n)}
@@ -804,47 +869,49 @@ export function Week(props: actions.Week) {
                     )}
                 </div>
                 {open && (
-                    <div id={`panel-${task.id}`}>
-                        {task.note && <p className="task-note">{task.note}</p>}
-                        <div className="task-actions">
-                            <button
-                                type="button"
-                                className="key-sm"
-                                id={`ed-${task.id}`}
-                                aria-label={`Editar ${task.text}`}
-                                onClick={() => startEdit(task)}
-                            >
-                                Editar
-                            </button>
-                            <button
-                                type="button"
-                                className="key-sm sq"
-                                id={`up-${task.id}`}
-                                aria-label={`Subir ${task.text}`}
-                                disabled={pos <= 0}
-                                onClick={() => moveTask(task.id, idx, -1)}
-                            >
-                                ↑
-                            </button>
-                            <button
-                                type="button"
-                                className="key-sm sq"
-                                id={`dn-${task.id}`}
-                                aria-label={`Descer ${task.text}`}
-                                disabled={pos < 0 || pos >= movable.length - 1}
-                                onClick={() => moveTask(task.id, idx, 1)}
-                            >
-                                ↓
-                            </button>
-                            <button
-                                type="button"
-                                className="remove"
-                                id={`rm-${task.id}`}
-                                aria-label={`Remover ${task.text}`}
-                                onClick={() => deleteTask(task)}
-                            >
-                                Remover
-                            </button>
+                    <div className="task-panel" id={`panel-${task.id}`}>
+                        <div>
+                            {task.note && <p className="task-note">{task.note}</p>}
+                            <div className="task-actions">
+                                <button
+                                    type="button"
+                                    className="key-sm"
+                                    id={`ed-${task.id}`}
+                                    aria-label={`Editar ${task.text}`}
+                                    onClick={() => startEdit(task)}
+                                >
+                                    Editar
+                                </button>
+                                <button
+                                    type="button"
+                                    className="key-sm sq"
+                                    id={`up-${task.id}`}
+                                    aria-label={`Subir ${task.text}`}
+                                    disabled={pos <= 0}
+                                    onClick={() => moveTask(task.id, idx, -1)}
+                                >
+                                    ↑
+                                </button>
+                                <button
+                                    type="button"
+                                    className="key-sm sq"
+                                    id={`dn-${task.id}`}
+                                    aria-label={`Descer ${task.text}`}
+                                    disabled={pos < 0 || pos >= movable.length - 1}
+                                    onClick={() => moveTask(task.id, idx, 1)}
+                                >
+                                    ↓
+                                </button>
+                                <button
+                                    type="button"
+                                    className="remove"
+                                    id={`rm-${task.id}`}
+                                    aria-label={`Remover ${task.text}`}
+                                    onClick={() => deleteTask(task)}
+                                >
+                                    Remover
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -967,11 +1034,37 @@ export function Week(props: actions.Week) {
         </form>
     );
 
+    // dial: o ponteiro segue o dedo; ao soltar, vai para o dia mais perto
+    const endDialSwipe = (e: ReactPointerEvent<HTMLElement>) =>
+        swipeEnd(e, (dx, el) => {
+            el.classList.remove("dragging");
+            el.style.removeProperty("--drag");
+            if (dx === null) return;
+            const next = Math.min(6, Math.max(0, selIdx + dialSteps(dx, el.clientWidth / 7)));
+            if (next === selIdx) return;
+            pickDay(next);
+            const iso = dayIso(next);
+            setAnnounce(`${DAY_FULL[weekday(iso)]} ${iso.slice(8)}`);
+        });
+
     const renderWeek = () => (
         <>
             {header}
             {status}
-            <nav className="dial" aria-label="Escolher o dia">
+            <nav
+                className="dial"
+                aria-label="Escolher o dia"
+                onPointerDown={swipeDown}
+                onClickCapture={swipeClick}
+                onPointerMove={(e) =>
+                    swipeMove(e, (dx, el) => {
+                        el.classList.add("dragging");
+                        el.style.setProperty("--drag", `${dx}px`);
+                    })
+                }
+                onPointerUp={endDialSwipe}
+                onPointerCancel={endDialSwipe}
+            >
                 <div className="dial-days">
                     {Array.from({ length: 7 }, (_, i) => {
                         const iso = dayIso(i);
@@ -1311,6 +1404,9 @@ export function Week(props: actions.Week) {
                       ? renderDayView()
                       : renderWeek()}
             </div>
+            <p className="sr" role="status" aria-live="polite">
+                {announce}
+            </p>
             <div className="toast-host" role="status" aria-live="polite">
                 {pending && (
                     <div className="toast">
