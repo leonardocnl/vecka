@@ -17,6 +17,8 @@ Uma cor de destaque só, sem variações de tom.
 | `done-text`  | `#575653` | `#A3A29E` | texto da tarefa concluída                                   |
 | `line`       | `#A8A7A3` | `#555555` | linhas entre os dias                                        |
 | `signal`     | `#CF1020` | `#CF1020` | ✕ da tarefa feita, risco, ponto do calendário, foco, atraso |
+| `field`      | `#8E8D89` | `#7A7976` | linha dos campos de texto e borda da nota (do legacy)       |
+| `disabled`   | `#8E8D89` | `#77766F` | dia passado no calendário (desabilitado, do legacy)         |
 
 - **O vermelho é sempre `#CF1020`, nos dois temas.** Onde ele é _texto_ (horário atrasado,
   aviso de erro), vira **fundo de etiqueta com texto branco** (contraste 5,6:1).
