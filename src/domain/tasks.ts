@@ -6,7 +6,7 @@ export const NOTE_MAX = 1000;
 export const DEFAULT_TIME_ZONE = "America/Sao_Paulo";
 export const WEEK_LENGTH = 7;
 
-export const DAY_NAMES = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
+export const DAY_NAMES = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 export const DAY_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
 /** Abreviações do dial e da recorrência (Space Mono). */
 export const DAY_ABBR = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
@@ -237,14 +237,14 @@ export function fullDate(iso: string): string {
     return `${d} de ${MONTHS[m - 1]} de ${y}`;
 }
 
-/** Etiqueta da recorrente: "↻ DIÁRIO" ou "↻ SEG QUA" (na ordem da semana). */
+/** Etiqueta da recorrente: "↻ diário" ou "↻ seg qua" (na ordem da semana). */
 export const recurrenceTag = (days: readonly number[]): string =>
     `↻ ${
         days.length === 7
-            ? "DIÁRIO"
+            ? "diário"
             : [...days]
                   .sort()
-                  .map((d) => DAY_ABBR[d])
+                  .map((d) => DAY_ABBR[d]!.toLowerCase())
                   .join(" ")
     }`;
 

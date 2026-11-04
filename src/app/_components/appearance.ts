@@ -51,13 +51,23 @@ export const useFontStep = () =>
         () => DEFAULT_FONT_STEP,
     );
 
-/** AUTO apaga a escolha (segue o sistema); CLARO e ESCURO a fixam neste aparelho. */
+/**
+ * AUTO apaga a escolha (segue o sistema); CLARO e ESCURO a fixam neste aparelho. O tema muda na
+ * hora: por um quadro, a classe theme-switch desliga as transições de cor (tudo troca de uma vez,
+ * sem arrasto), e o salvamento fica para depois do quadro.
+ */
 export function applyTheme(theme: ThemeChoice, save: boolean) {
     const root = document.documentElement.classList;
+    root.add("theme-switch");
     root.toggle("dark", theme === "dark");
     root.toggle("light", theme === "light");
-    if (save) write(THEME_KEY, theme === "auto" ? null : theme);
     notify();
+    requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+            root.remove("theme-switch");
+            if (save) write(THEME_KEY, theme === "auto" ? null : theme);
+        }),
+    );
 }
 
 export function applyFontStep(step: number, save: boolean) {

@@ -26,7 +26,7 @@ export async function SignIn({ failed = false }: { failed?: boolean }) {
             <p className="signin-tagline">
                 A semana,
                 <br />
-                sintonizada.
+                sintonizada
             </p>
             {failed && (
                 <p role="alert" className="notice">

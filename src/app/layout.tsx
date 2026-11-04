@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, Space_Mono } from "next/font/google";
 import Script from "next/script";
-import { Grain } from "./_components/Grain";
 import "./globals.css";
 
 const spaceMono = Space_Mono({
@@ -35,7 +34,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
             <body className="min-h-dvh">
                 <Script src="/appearance.js" strategy="beforeInteractive" />
-                <Grain />
                 {children}
             </body>
         </html>

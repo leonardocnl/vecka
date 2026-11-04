@@ -168,9 +168,9 @@ describe("atraso, ponto e textos", () => {
     });
 
     it("etiqueta da recorrente", () => {
-        expect(recurrenceTag([0, 1, 2, 3, 4, 5, 6])).toBe("↻ DIÁRIO");
-        expect(recurrenceTag([3, 1])).toBe("↻ SEG QUA");
-        expect(recurrenceTag([0, 6])).toBe("↻ DOM SÁB");
+        expect(recurrenceTag([0, 1, 2, 3, 4, 5, 6])).toBe("↻ diário");
+        expect(recurrenceTag([3, 1])).toBe("↻ seg qua");
+        expect(recurrenceTag([0, 6])).toBe("↻ dom sáb");
     });
 
     it("pendentes do mês: dias com avulsa não feita, de hoje em diante", () => {
