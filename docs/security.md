@@ -111,6 +111,17 @@ Implemented by hand, as in Kinne, with only Node `crypto`.
 - Every route except `/entrar` and the OAuth routes requires a session.
 - Server actions keep Next.js origin checking enabled.
 
+As built (phase 1):
+
+- Scopes `openid email profile` only. `state`, `code_verifier` and `nonce` are 32 random bytes each, kept in `__Host-vecka_oauth` (10 min, single use, cleared on the callback); `state` and `nonce` are compared in constant time.
+- The ID token must be RS256, signed by a key from Google's JWKS (`kid` lookup, refetched on an unknown `kid`), with `iss` = `accounts.google.com`, `aud` (and `azp`, if present) = our client ID, valid `exp`/`iat` (60 s skew), our `nonce`, and `email_verified: true`.
+- `ALLOWED_EMAILS` (comma-separated, case-insensitive) is checked after the token is validated and before any database write: anyone else gets the generic error page and no session or row. An empty list lets nobody in.
+- Sessions: 30 days of inactivity, 90 days absolute, renewed at most once an hour, always by the database clock. Expired sessions of the account are purged on each sign-in.
+- `src/proxy.ts` redirects requests without the session cookie to `/entrar`; each page checks the session in the database (`requireUser()`).
+- Sign-in starts with a plain link (GET), so the redirect to Google does not hit `form-action 'self'`; the CSP is unchanged.
+- Every failure (state, token, allowlist, Google down, missing config) shows the same page, `/entrar/erro`; the reason goes only to the server log, without email or tokens.
+- Attack tests against a real Postgres: `src/infrastructure/db/auth.db.test.ts` (`npm run test:db`, CI job `auth-db`).
+
 ## 14. Verification
 
 - `npm test` covers the header policy, the `server-only` rule and the design tokens.
@@ -120,3 +131,9 @@ Implemented by hand, as in Kinne, with only Node `crypto`.
 ## 15. Accepted risks
 
 - **`'unsafe-inline'` in `script-src`.** The Next.js runtime writes per-request inline scripts (`self.__next_f.push(...)`); only a per-request nonce would cover them, which forces dynamic rendering of every page. What still blocks: external script hosts, `eval`, `javascript:`/`data:` URLs, plugins, framing, base-tag injection, forms posted elsewhere. Mitigation: §5 and §6 (no `dangerouslySetInnerHTML`, user text always rendered as text). Revisit in phase 6.
+
+## 16. Known false positives
+
+Scanner alerts reviewed and dismissed as false positives, with the reason. Each one is re-checked if the code it points at changes.
+
+- **CodeQL `js/insufficient-password-hash` in `src/infrastructure/auth/google.ts` (`pkceChallenge`).** Dismissed 2026-11-03 as "false positive": PKCE `code_challenge` (RFC 7636 §4.2) is the SHA-256 of a 32-byte random, per-attempt `code_verifier`, not a password. The protocol requires S256; a slow password hash would break it.
