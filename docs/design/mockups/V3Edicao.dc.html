@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Vecka — editar tarefa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #8F8C84; color: #1E1E1E; font-family: 'IBM Plex Sans', sans-serif; position: relative; overflow: hidden">
+    <div style="position: absolute; left: 16px; right: 16px; top: 56px; height: 230px; border-radius: 24px; background: #9A978F"></div>
+
+    <section role="dialog" aria-label="Editar tarefa" style="position: absolute; left: 0; right: 0; bottom: 0; background: #F3F1EB; border-radius: 28px 28px 0 0; padding: 10px 16px 30px 16px; box-shadow: inset 0 1px 0 #FFFFFF, 0 -6px 24px rgba(30,20,5,0.25); display: flex; flex-direction: column; gap: 14px">
+        <span aria-hidden="true" style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #C4C1B9"></span>
+        <div style="display: flex; align-items: center; gap: 8px">
+            <h2 style="margin: 0; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px; color: #4F4E4B; font-weight: 400">EDITAR TAREFA</h2>
+            <span style="flex: 1; height: 2px; background: #1E1E1E"></span>
+        </div>
+
+        <label for="ed-text" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Texto</label>
+        <input id="ed-text" value="Dentista" style="height: 48px; border-radius: 24px; border: 0; background: #E9E6DE; box-shadow: inset 0 1px 2px rgba(40,30,10,0.18), 0 0 0 1px #CFCBC2; padding: 0 20px; font: inherit; font-size: 17px; color: #1E1E1E; outline: none">
+        <label for="ed-note" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Nota</label>
+        <textarea id="ed-note" rows="2" style="border-radius: 18px; border: 0; background: #E9E6DE; box-shadow: inset 0 1px 2px rgba(40,30,10,0.18), 0 0 0 1px #CFCBC2; padding: 12px 20px; font: inherit; font-size: 15px; line-height: 1.45; color: #1E1E1E; resize: none; outline: none">Rua das Flores, 120 — sala 3</textarea>
+
+        <div style="display: flex; align-items: center; gap: 8px">
+            <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #4F4E4B">HORA</span>
+            <span style="flex: 1; height: 1px; background: #C4C1B9"></span>
+            <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; background: #232321; color: #C4F000; padding: 3px 8px; border-radius: 6px">14:30</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px">
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">06</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">07</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">08</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">09</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">10</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">11</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">12</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">13</button>
+            <button type="button" aria-pressed="true" style="height: 40px; border-radius: 12px; background: #C4F000; box-shadow: inset 0 1px 2px rgba(0,0,0,0.28)">14</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">15</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">16</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">17</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">18</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">19</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">20</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">21</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">22</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10)">23</button>
+        </div>
+        <p style="margin: -6px 0 0 0; font-size: 12px; color: #4F4E4B"><span style="text-decoration: underline">madrugada (00 a 05)</span> · <span style="text-decoration: underline">minutos de 5 em 5</span></p>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px">:00</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px">:15</button>
+            <button type="button" aria-pressed="true" style="height: 40px; border-radius: 12px; background: #C4F000; box-shadow: inset 0 1px 2px rgba(0,0,0,0.28); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px">:30</button>
+            <button type="button" style="height: 40px; border-radius: 12px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px">:45</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px">
+            <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #4F4E4B">REPETIR</span>
+            <span style="flex: 1; height: 1px; background: #C4C1B9"></span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+            <button type="button" aria-label="domingo" style="height: 40px; border-radius: 20px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">D</button>
+            <button type="button" aria-label="segunda" style="height: 40px; border-radius: 20px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">S</button>
+            <button type="button" aria-label="terça" style="height: 40px; border-radius: 20px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">T</button>
+            <button type="button" aria-label="quarta" aria-pressed="true" style="height: 40px; border-radius: 20px; background: #232321; color: #EDEAE1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">Q</button>
+            <button type="button" aria-label="quinta" style="height: 40px; border-radius: 20px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">Q</button>
+            <button type="button" aria-label="sexta" style="height: 40px; border-radius: 20px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">S</button>
+            <button type="button" aria-label="sábado" style="height: 40px; border-radius: 20px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">S</button>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 6px">
+            <button type="button" style="flex: 1; height: 48px; border-radius: 24px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-size: 16px">Cancelar</button>
+            <button type="button" style="flex: 1; height: 48px; border-radius: 24px; background: #C4F000; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 1px 2px rgba(0,0,0,0.4); font-size: 16px; font-weight: 600">Salvar</button>
+        </div>
+    </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+    renderVals() {
+        return {};
+    }
+}
+</script>
+</body>
+</html>

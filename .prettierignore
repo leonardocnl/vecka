@@ -11,3 +11,6 @@ drizzle/
 
 # versão anterior: guardada exatamente como estava (referência)
 legacy/
+
+# mockups do design (HTML do canvas, referência visual)
+docs/design/mockups/
