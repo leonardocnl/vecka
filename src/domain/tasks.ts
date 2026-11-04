@@ -175,6 +175,32 @@ export function swapPositions(
 export const toggleIn = (list: readonly number[], value: number): number[] =>
     (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]).sort();
 
+// ---------- histórico (dias passados, só consulta) ----------
+
+/** Tarefa lida do histórico: o dia (no fuso do usuário) em que foi criada. */
+export type HistoryTask = Task & { createdOn: string };
+
+/**
+ * O que aparece num dia passado: avulsas daquela data e recorrentes que caem naquele dia da
+ * semana, só a partir do dia em que foram criadas. Removidas nem chegam aqui (o servidor as
+ * descarta). Feita = há conclusão naquela data. Mesma ordem das outras telas.
+ */
+export const historyFor = (tasks: readonly HistoryTask[], iso: string): HistoryTask[] =>
+    tasksFor(
+        tasks.filter((t) => !t.recurringDays || t.createdOn <= iso),
+        iso,
+    ) as HistoryTask[];
+
+/** Ponto cinza no calendário: o dia passado tem alguma tarefa. */
+export const hasHistoryOn = (tasks: readonly HistoryTask[], iso: string): boolean =>
+    historyFor(tasks, iso).length > 0;
+
+/** O primeiro e o último dia do mês (month 0–11). */
+export const monthRange = (year: number, month: number): { from: string; to: string } => ({
+    from: toIso(Date.UTC(year, month, 1)),
+    to: toIso(Date.UTC(year, month + 1, 0)),
+});
+
 // ---------- textos ----------
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -187,13 +213,15 @@ export function daysText(days: readonly number[]): string {
     return `${names.slice(0, -1).join(", ")} e ${names[names.length - 1]}`;
 }
 
-/** "30 de outubro de 2026 — 13:05" (hoje) / "— amanhã" / "— em 19 dias" / só a data. */
+/** "30 de outubro de 2026 — 13:05" (hoje) / "— amanhã" / "— em 19 dias" / "— ontem" / "— há 5 dias". */
 export function dateLine(iso: string, idx: number, clock: string): string {
     const [y, m, d] = parts(iso);
     const base = `${d} de ${MONTHS[m - 1]} de ${y}`;
     if (idx === 0) return `${base} — ${clock}`;
     if (idx === 1) return `${base} — amanhã`;
     if (idx > 6) return `${base} — em ${idx} dias`;
+    if (idx === -1) return `${base} — ontem`;
+    if (idx < -1) return `${base} — há ${-idx} dias`;
     return base;
 }
 

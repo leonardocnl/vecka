@@ -1,4 +1,4 @@
-import { appliesOn, swapPositions, type Task } from "@/domain/tasks";
+import { appliesOn, swapPositions, type HistoryTask, type Task } from "@/domain/tasks";
 
 // Casos de uso das tarefas. O userId e o "hoje" vêm sempre da sessão (o fuso é o do usuário);
 // o servidor reconfere toda regra que a tela aplica: dia passado é só leitura, e a tarefa precisa
@@ -14,6 +14,10 @@ export type TaskInput = {
 export interface TasksRepository {
     list(userId: number, today: string): Promise<Task[]>;
     get(userId: number, id: number): Promise<Task | null>;
+    /** Dias passados (só leitura), de from a to. */
+    history(userId: number, from: string, to: string): Promise<HistoryTask[]>;
+    /** Dia de criação da conta, no fuso do usuário. */
+    since(userId: number): Promise<string | null>;
     add(userId: number, input: TaskInput): Promise<number>;
     update(
         userId: number,

@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { OAUTH_COOKIE, OAUTH_TTL_SECONDS } from "@/domain/auth";
 import { appUrl, googleConfig } from "@/infrastructure/auth/config";
 import { authorizationUrl, newOAuthAttempt, serializeAttempt } from "@/infrastructure/auth/google";
@@ -7,7 +7,7 @@ import { secureCookie } from "@/app/_auth/session";
 // Começa o login: state, code_verifier e nonce novos, presos a este navegador num cookie __Host-
 // de 10 minutos, e redireciona para o Google (security.md §13). Sem APP_URL, a tela de erro
 // também falha (500): falha fechada.
-export async function GET(request: NextRequest) {
+export async function GET() {
     let config, origin;
     try {
         config = googleConfig();

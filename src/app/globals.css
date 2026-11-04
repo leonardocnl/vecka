@@ -653,6 +653,21 @@
         border-radius: 4px;
         background: var(--color-signal);
     }
+    /* dia passado com histórico: ponto cinza */
+    .dot.past {
+        background: var(--color-muted);
+    }
+    /* ===== Dia passado (só consulta) ===== */
+    .past-notice {
+        margin: 0 0 8px 0;
+    }
+    .task-main.past {
+        margin: 0;
+        cursor: default;
+    }
+    .past-note {
+        padding-left: 38px;
+    }
     @media (max-width: 480px) {
         .cal-title {
             font-size: 22px;

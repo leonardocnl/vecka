@@ -136,4 +136,66 @@ describe.runIf(dbTestsEnabled)("tarefas: isolamento por usuário (Postgres de ve
             insert(`date, time) values (${alice}, 'x', 1, current_date, '25:00'`),
         ).toThrow();
     });
+
+    describe("histórico", () => {
+        const d = (n: number) => admin(`select to_char(current_date + ${n}, 'YYYY-MM-DD')`);
+        let from = "";
+        let to = "";
+
+        beforeEach(() => {
+            from = d(-20);
+            to = d(-1);
+            // avulsa de 3 dias atrás, feita; avulsa de 5 dias atrás, removida
+            admin(`update tasks set date = current_date - 3 where id = ${task}`);
+            admin(
+                `insert into task_completions (task_id, date) values (${task}, current_date - 3)`,
+            );
+            admin(`insert into tasks (user_id, text, date, position, deleted_at)
+                values (${alice}, 'removida', current_date - 5, 1, now())`);
+            // recorrente de todos os dias, criada há 10 dias
+            admin(`insert into tasks (user_id, text, recurring_days, position, created_at)
+                values (${alice}, 'diária', '{0,1,2,3,4,5,6}', 1, now() - interval '10 days')`);
+        });
+
+        it("bob não lê o histórico da alice", async () => {
+            expect(await repo.history(bob, from, to)).toEqual([]);
+            expect(await repo.history(bob, d(-60), d(60))).toEqual([]);
+        });
+
+        it("alice lê as avulsas do intervalo, as recorrentes e as conclusões; removidas não", async () => {
+            const list = await repo.history(alice, from, to);
+            const texts = list.map((t) => t.text);
+            expect(texts).toContain("segredo da alice");
+            expect(texts).toContain("diária");
+            expect(texts).not.toContain("removida");
+            expect(texts).not.toContain("outra"); // é de hoje, fora do intervalo
+            expect(list.find((t) => t.id === task)?.doneDates).toEqual([d(-3)]);
+            expect(list.find((t) => t.text === "diária")?.createdOn).toBe(
+                admin(
+                    "select to_char((now() - interval '10 days') at time zone 'America/Sao_Paulo', 'YYYY-MM-DD')",
+                ),
+            );
+        });
+
+        it("recorrente criada depois do intervalo não aparece nele", async () => {
+            expect((await repo.history(alice, d(-30), d(-15))).map((t) => t.text)).toEqual([]);
+        });
+
+        it("dia de criação da conta, só da própria conta", async () => {
+            expect(await repo.since(alice)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+            expect(await repo.since(999_999)).toBeNull();
+        });
+
+        it("o histórico continua só leitura no servidor", async () => {
+            const before = dump();
+            const old = d(-3);
+            expect(await uc.setDone(ctx(alice), { id: task, date: old, done: false })).toBe(false);
+            expect(await uc.removeTask(ctx(alice), { id: task })).toBe(false);
+            const edit = { id: task, text: "mudou", time: null, note: null, days: null, date: old };
+            expect(await uc.updateTask(ctx(alice), edit)).toBe(false);
+            expect(await uc.moveTask(ctx(alice), { id: task, date: old, dir: 1 })).toBe(false);
+            expect(dump()).toBe(before);
+            expect(doneRows()).toBe(1);
+        });
+    });
 });

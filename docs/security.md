@@ -55,6 +55,12 @@ Phase 2 (tasks), as built:
 - Every statement in `src/infrastructure/db/tasks-sql.ts` filters by `user_id` and `deleted_at is null`; "today" comes from the user's stored time zone (`users.time_zone`, default `America/Sao_Paulo`). Writes to past days are refused on the server; a completion must be for a day the task applies to; ↑ ↓ positions are computed on the server.
 - Attack tests (`tasks.db.test.ts`, job `auth-db`): another user can't read, edit, mark, move or remove a task; removed tasks accept nothing; the database rejects invalid schedules.
 
+Phase 3 (history), as built:
+
+- `loadHistory` (`src/app/_actions/tasks.ts`) is read-only: strict schema `{ from, to }` (real dates, `from ≤ to`, at most 42 days), user from the session, generic error. `listHistory` in `tasks-sql.ts` filters by `user_id` and `deleted_at is null`; removed tasks never appear, not even in the past.
+- Past days stay read-only on the server: the write use cases still refuse any past date (`tasks.db.test.ts`, "o histórico continua só leitura no servidor").
+- Attack tests: another user reads an empty history for any range.
+
 ## 6. Output, errors and logging
 
 - Users see only generic messages in pt-BR. No stack traces, SQL, table names or library versions.
