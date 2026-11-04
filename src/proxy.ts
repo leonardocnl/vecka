@@ -5,10 +5,18 @@ import { appUrl } from "@/infrastructure/auth/config";
 // Primeira barreira: sem cookie de sessão, toda rota que não é pública vai para /entrar. A
 // conferência de verdade (banco, expiração) é feita na página com requireUser().
 const PUBLIC = /^\/(entrar(\/erro)?|api\/auth\/google(\/callback)?)$/;
+// páginas de desenvolvimento (src/app/dev): sem sessão, só fora de produção; em produção dão 404
+const DEV_ONLY = /^\/dev\//;
+const isDev = () => process.env.NODE_ENV !== "production";
 
 export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
-    if (PUBLIC.test(pathname) || request.cookies.has(SESSION_COOKIE)) return NextResponse.next();
+    if (
+        PUBLIC.test(pathname) ||
+        (isDev() && DEV_ONLY.test(pathname)) ||
+        request.cookies.has(SESSION_COOKIE)
+    )
+        return NextResponse.next();
     return NextResponse.redirect(new URL("/entrar", appUrl()), 303);
 }
 

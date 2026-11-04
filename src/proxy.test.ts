@@ -23,4 +23,12 @@ describe("proxy", () => {
         const response = proxy(new NextRequest("http://localhost:3000/"));
         expect(response.headers.get("location")).toBe("http://localhost:3000/entrar");
     });
+
+    it("páginas /dev/ passam sem sessão só fora de produção", () => {
+        const dev = () => proxy(new NextRequest("http://localhost:3000/dev/sombras"));
+        expect(dev().headers.get("location")).toBeNull();
+        vi.stubEnv("NODE_ENV", "production");
+        expect(dev().headers.get("location")).toBe("http://localhost:3000/entrar");
+        vi.unstubAllEnvs();
+    });
 });
