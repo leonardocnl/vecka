@@ -3,7 +3,7 @@
 import "server-only";
 import type { z } from "zod";
 import * as uc from "@/application/tasks";
-import { HH_MM, isValidDate, NOTE_MAX, TEXT_MAX, todayIn, type Task } from "@/domain/tasks";
+import { todayIn, type Task } from "@/domain/tasks";
 import { MemoryLimiter } from "@/infrastructure/memory-limiter";
 import { createDb } from "@/infrastructure/db/client";
 import { DrizzleTasksRepository } from "@/infrastructure/db/tasks-repository";
@@ -13,7 +13,7 @@ import { schemas } from "./task-schemas";
 // Toda server action é um endpoint público (security.md §5): entrada com zod estrito (chaves
 // desconhecidas recusadas), usuário e "hoje" só da sessão, erro sempre genérico para a tela.
 
-export type Result<T = undefined> = { ok: true; value: T } | { ok: false };
+export type Result<T = undefined> = { ok: true; value: T } | { ok: false; signedOut?: true };
 const fail = { ok: false } as const;
 
 // 120 escritas de folga e 2 por segundo, por usuário
@@ -57,7 +57,8 @@ export type Week = { today: string; timeZone: string; tasks: Task[] };
 export async function loadWeek(): Promise<Result<Week>> {
     try {
         const user = await currentUser();
-        if (!user) return fail;
+        // sessão vencida ou encerrada em outro aparelho: a tela volta para /entrar
+        if (!user) return { ok: false, signedOut: true };
         const today = todayIn(user.timeZone, new Date());
         const tasks = await new DrizzleTasksRepository(createDb()).list(user.id, today);
         return { ok: true, value: { today, timeZone: user.timeZone, tasks } };
