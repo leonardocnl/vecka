@@ -39,22 +39,56 @@ describe("nomes de container", () => {
     });
 });
 
-// Relevo (docs/design.md): um conjunto fechado de sombras. Todo box-shadow usa um desses tokens.
+// Relevo (docs/design.md): uma luz só. Três elevações de no máximo duas camadas, sombra externa só
+// para baixo e sempre com desfoque = 3 × deslocamento; oito tokens de uso escritos sobre elas.
 describe("sombras", () => {
-    it("todo box-shadow do globals.css é um token do Relevo", () => {
-        const css = readFileSync(join(appDir, "globals.css"), "utf8");
-        const allowed = [
-            "key",
-            "key-dark",
-            "key-accent",
-            "pressed",
-            "field",
-            "field-focus",
-            "plate",
-            "float",
-        ].map((name) => `var(--shadow-${name})`);
+    const css = readFileSync(join(appDir, "globals.css"), "utf8");
+    const uses = [
+        "key",
+        "key-dark",
+        "key-accent",
+        "pressed",
+        "field",
+        "field-focus",
+        "plate",
+        "float",
+    ];
+
+    it("todo box-shadow do globals.css é um token de uso (ou none)", () => {
+        const allowed = [...uses.map((name) => `var(--shadow-${name})`), "none"];
         const used = [...css.matchAll(/box-shadow:\s*([^;]+);/g)].map((m) => m[1]!.trim());
         expect(used.length).toBeGreaterThan(0);
         expect(used.filter((value) => !allowed.includes(value))).toEqual([]);
+    });
+
+    it("os tokens de uso são uma das três elevações", () => {
+        const def = (name: string) =>
+            css.match(new RegExp(`--shadow-${name}:\\s*([^;]+);`))?.[1]?.replace(/\s+/g, " ");
+        for (const name of uses.filter((n) => n !== "field-focus")) {
+            expect(def(name), name).toMatch(/^var\(--shadow-(sunken|resting|floating)\)$/);
+        }
+    });
+
+    it("cada elevação tem até 2 camadas, só deslocamento vertical e desfoque = 3 × deslocamento", () => {
+        const layers = [
+            ...css.matchAll(
+                /--(?:shadow-(?:sunken|resting|floating|field-focus)|drop-resting):([^;]+);/g,
+            ),
+        ].map((m) => m[1]!);
+        expect(layers.length).toBe(5);
+        for (const value of layers) {
+            const parts = [...value.matchAll(/(?:inset )?0 ([\d.]+)px ([\d.]+)px/g)];
+            expect(parts.length, value).toBeGreaterThan(0);
+            expect(parts.length, value).toBeLessThanOrEqual(2);
+            for (const [, y, blur] of parts) {
+                // drop-shadow() mede o desfoque pelo desvio padrão: metade do box-shadow
+                const k = value.includes("drop-shadow") ? 1.5 : 3;
+                expect(Number(blur), value).toBeCloseTo(Number(y) * k);
+            }
+        }
+    });
+
+    it("sem contornos de 1px por cima das sombras", () => {
+        expect(css).not.toMatch(/0 0 0 1px/);
     });
 });

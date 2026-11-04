@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Tokens do Vecka (Rádio III), exatamente como em docs/design.md; medidas e sombras dos mockups em
+ * Tokens do Vecka (Rádio III), exatamente como em docs/design.md; medidas dos mockups em
  * docs/design/mockups/. Única fonte de valores visuais: componentes e telas só usam as classes
  * daqui. Os padrões do Tailwind que concorrem com os tokens são apagados (initial).
  */
@@ -10,35 +10,33 @@
     --color-*: initial;
     --color-paper: #e7e4dc; /* fundo, com grão */
     --color-plate: #f3f1eb; /* placa marfim: cards, folhas, ajustes, teclas claras */
-    --color-plate-ring: #cfcbc2; /* contorno de 1px das placas */
     --color-panel: #232321; /* painel grafite: dial, barra inferior, placas de virar */
-    --color-panel-ring: #151514; /* contorno de 1px dos painéis */
     --color-key-dark: #3a3a37; /* tecla escura sobre painel */
     --color-knob: #2b2b28; /* botão giratório */
     --color-sunken: #e9e6de; /* campo afundado sobre placa */
     --color-sunken-dark: #2b2b28; /* campo afundado sobre painel */
     --color-flap-top: #2b2b28; /* metade de cima da placa de virar */
-    --color-flap-gap: #0e0e0d; /* fresta entre as metades da placa de virar */
-    --color-ink: #1e1e1e; /* texto principal, caixa da tarefa, régua */
-    --color-ink-on-panel: #edeae1; /* texto sobre painel */
-    --color-muted: #4f4e4b; /* texto secundário, etiquetas técnicas */
-    --color-muted-panel: #a9a8a4; /* texto secundário sobre painel */
-    --color-index: #5c5b58; /* numeração 01, 02... e dias passados no calendário */
-    --color-done-text: #575653; /* texto da tarefa feita */
-    --color-rule-dashed: #c4c1b9; /* tracejado entre tarefas */
+    --color-flap-gap: #0e0e0d; /* fresta entre as metades da placa de virar; sombra da folha que gira */
+    /* texto: três tons por superfície (principal, secundário, desligado) */
+    --color-ink: #1e1e1e; /* principal; caixa da tarefa */
+    --color-muted: #4f4e4b; /* secundário: rótulos, tarefa feita, numeração, dicas */
+    --color-off: #8e8d89; /* desligado: teclas inativas, dias sem acesso, ponto de histórico */
+    --color-ink-on-panel: #edeae1;
+    --color-muted-panel: #a9a8a4;
+    --color-off-panel: #626160;
+    --color-rule: #c4c1b9; /* tracejado entre tarefas, pontos do tamanho do texto, alça da folha */
     --color-tick-major: #edeae1; /* marcações principais do dial */
     --color-tick-minor: #55554f; /* marcações menores do dial e linha base */
-    --color-history-dot: #8e8d89; /* ponto de histórico; contorno da etiqueta de horário */
     --color-accent: #c4f000; /* verde ácido: só preenchimento ou texto sobre painel */
     --color-on-accent: #1e1e1e; /* texto e ícones sobre o verde */
+    --color-scrim: rgb(35 35 33 / 0.4); /* fundo escurecido atrás da folha */
 
-    /* relevo: as sombras ficam em @layer base, porque dependem do material (placa ou painel) */
-    --shadow-*: initial;
+    --shadow-*: initial; /* as sombras ficam em @layer base: dependem do material */
 
     /* fontes (as variáveis vêm do next/font, em layout.tsx) */
     --font-*: initial;
-    --font-title: var(--font-space-mono); /* datas, dias, horários, números, etiquetas */
-    --font-sans: var(--font-ibm-plex-sans); /* texto */
+    --font-title: var(--font-space-mono); /* wordmark, título do dia, placas, dial, horas */
+    --font-sans: var(--font-ibm-plex-sans); /* todo o resto */
 
     /* espaçamento: 8 / 16 / 24 / 32; margem lateral 16 */
     --spacing-*: initial;
@@ -49,34 +47,68 @@
 
     --breakpoint-*: initial;
 
-    /* movimento (docs/design.md, "Animações"): três durações e duas curvas, nada fora delas */
-    --duration-press: 150ms; /* tecla soltando, ponteiro, folha caindo */
-    --duration-state: 200ms; /* troca de estado: tarefa abrindo, ajustes, gesto voltando */
-    --duration-enter: 250ms; /* entrada de peça flutuante: folha */
+    /*
+     * Movimento (docs/design.md, "Movimento"): só transform e opacity. Uma mola criticamente
+     * amortecida (sem quique), gerada de x(t) = 1 - (1 + ωt)·e^(-ωt), com ω = 9,23 para chegar a
+     * 99,9% no fim da duração. As durações são as da Apple para peças pequenas e para a folha.
+     */
+    --duration-press: 150ms; /* tecla soltando; metade de cima da placa caindo */
+    --duration-small: 350ms; /* ajustes, tarefa abrindo, ponteiro, placa assentando, tema */
+    --duration-sheet: 480ms; /* folha subindo e descendo */
+    --duration-fade: 150ms; /* troca de texto; tudo com movimento reduzido */
     --ease-*: initial;
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* chega desacelerando */
+    --ease-spring: linear(
+        0,
+        0.023 2.5%,
+        0.079 5%,
+        0.153 7.5%,
+        0.236 10%,
+        0.321 12.5%,
+        0.403 15%,
+        0.48 17.5%,
+        0.551 20%,
+        0.614 22.5%,
+        0.671 25%,
+        0.72 27.5%,
+        0.764 30%,
+        0.801 32.5%,
+        0.833 35%,
+        0.86 37.5%,
+        0.883 40%,
+        0.925 46%,
+        0.952 52%,
+        0.97 58%,
+        0.981 64%,
+        0.988 70%,
+        0.993 76%,
+        0.996 82%,
+        0.997 88%,
+        0.998 94%,
+        1
+    );
     --ease-in: cubic-bezier(0.55, 0, 1, 0.45); /* cai acelerando (placa de virar) */
     --animate-*: initial;
 }
 
 @layer base {
     /*
-     * Relevo: o conjunto fechado de sombras (docs/design.md, "Relevo"). A luz vem de cima: brilho
-     * de 1px na borda de cima, sombra para baixo, mesma direção e desfoque em tudo. Tecla sobe,
-     * campo afunda, o que está escolhido afunda. Os ingredientes mudam com o tema; o brilho, o
-     * contorno e o fundo dos campos mudam com o material (placa marfim ou painel grafite).
+     * Relevo (docs/design.md): uma luz só, vinda de cima. Três elevações, cada uma com duas
+     * camadas; toda sombra externa só desce (nunca para o lado) e tem desfoque = 3 × deslocamento.
+     * O que muda de uma elevação para outra é só a altura. Os oito tokens de uso são escritos
+     * sobre elas. A cor da sombra muda com o tema e com o material onde a peça está.
      */
     :root,
     .light {
-        --plate-hi: #ffffff;
-        --plate-sink: rgb(40 30 10 / 0.18);
-        --panel-hi: rgb(255 255 255 / 0.09);
-        --panel-sink: rgb(0 0 0 / 0.45);
-        --drop-key: rgb(40 30 10 / 0.14);
-        --drop-key-dark: rgb(0 0 0 / 0.4);
-        --drop-plate: rgb(40 30 10 / 0.12);
-        --drop-float: rgb(40 30 10 / 0.24);
-        --press: rgb(0 0 0 / 0.28);
+        --shade: rgb(40 30 10 / 0.1); /* sombra perto da peça */
+        --shade-far: rgb(40 30 10 / 0.1); /* sombra longe */
+        --shade-panel: rgb(0 0 0 / 0.35);
+        --shade-panel-far: rgb(0 0 0 / 0.25);
+        --sink-plate: rgb(40 30 10 / 0.14);
+        --sink-panel: rgb(0 0 0 / 0.4);
+        --sink-plate-deep: rgb(40 30 10 / 0.26);
+        --sink-panel-deep: rgb(0 0 0 / 0.6);
+        --hi-plate: rgb(255 255 255 / 0.9); /* borda de luz em cima */
+        --hi-panel: rgb(255 255 255 / 0.1);
         /* cursor: verde só onde ele aparece (1,06:1 sobre o campo marfim claro) */
         --plate-caret: var(--color-ink);
     }
@@ -85,9 +117,7 @@
         :root:not(.light) {
             --color-paper: #1a1a19;
             --color-plate: #262624;
-            --color-plate-ring: #333331;
             --color-panel: #0f0f0e;
-            --color-panel-ring: #000000;
             --color-key-dark: #2b2b28;
             --color-sunken: #1e1e1c;
             --color-sunken-dark: #1e1e1c;
@@ -95,20 +125,21 @@
             --color-flap-gap: #000000;
             --color-ink: #edeae1;
             --color-muted: #a9a8a4;
-            --color-index: #a9a8a4;
-            --color-done-text: #a3a29e;
-            --color-rule-dashed: #3e3e3b;
+            --color-off: #7a7975;
+            --color-off-panel: #5a5955;
+            --color-rule: #3e3e3b;
             --color-tick-minor: #4a4a46;
-            --plate-hi: rgb(255 255 255 / 0.06);
-            --plate-sink: rgb(0 0 0 / 0.45);
-            --panel-hi: rgb(255 255 255 / 0.05);
-            --panel-sink: rgb(0 0 0 / 0.6);
-            --drop-key: rgb(0 0 0 / 0.4);
-            --drop-key-dark: rgb(0 0 0 / 0.6);
-            --drop-plate: rgb(0 0 0 / 0.4);
-            --drop-float: rgb(0 0 0 / 0.55);
-            --press: rgb(0 0 0 / 0.35);
-            --plate-caret: var(--color-accent);
+            --color-scrim: rgb(0 0 0 / 0.5);
+            --shade: rgb(0 0 0 / 0.3);
+            --shade-far: rgb(0 0 0 / 0.3);
+            --shade-panel: rgb(0 0 0 / 0.45);
+            --shade-panel-far: rgb(0 0 0 / 0.35);
+            --sink-plate: rgb(0 0 0 / 0.4);
+            --sink-panel: rgb(0 0 0 / 0.55);
+            --sink-plate-deep: rgb(0 0 0 / 0.6);
+            --sink-panel-deep: rgb(0 0 0 / 0.7);
+            --hi-plate: rgb(255 255 255 / 0.08);
+            --hi-panel: rgb(255 255 255 / 0.07);
             --plate-caret: var(--color-accent);
         }
     }
@@ -116,9 +147,7 @@
     .dark {
         --color-paper: #1a1a19;
         --color-plate: #262624;
-        --color-plate-ring: #333331;
         --color-panel: #0f0f0e;
-        --color-panel-ring: #000000;
         --color-key-dark: #2b2b28;
         --color-sunken: #1e1e1c;
         --color-sunken-dark: #1e1e1c;
@@ -126,28 +155,28 @@
         --color-flap-gap: #000000;
         --color-ink: #edeae1;
         --color-muted: #a9a8a4;
-        --color-index: #a9a8a4;
-        --color-done-text: #a3a29e;
-        --color-rule-dashed: #3e3e3b;
+        --color-off: #7a7975;
+        --color-off-panel: #5a5955;
+        --color-rule: #3e3e3b;
         --color-tick-minor: #4a4a46;
-        --plate-hi: rgb(255 255 255 / 0.06);
-        --plate-sink: rgb(0 0 0 / 0.45);
-        --panel-hi: rgb(255 255 255 / 0.05);
-        --panel-sink: rgb(0 0 0 / 0.6);
-        --drop-key: rgb(0 0 0 / 0.4);
-        --drop-key-dark: rgb(0 0 0 / 0.6);
-        --drop-plate: rgb(0 0 0 / 0.4);
-        --drop-float: rgb(0 0 0 / 0.55);
-        --press: rgb(0 0 0 / 0.35);
+        --color-scrim: rgb(0 0 0 / 0.5);
+        --shade: rgb(0 0 0 / 0.3);
+        --shade-far: rgb(0 0 0 / 0.3);
+        --shade-panel: rgb(0 0 0 / 0.45);
+        --shade-panel-far: rgb(0 0 0 / 0.35);
+        --sink-plate: rgb(0 0 0 / 0.4);
+        --sink-panel: rgb(0 0 0 / 0.55);
+        --sink-plate-deep: rgb(0 0 0 / 0.6);
+        --sink-panel-deep: rgb(0 0 0 / 0.7);
+        --hi-plate: rgb(255 255 255 / 0.08);
+        --hi-panel: rgb(255 255 255 / 0.07);
         --plate-caret: var(--color-accent);
     }
     /* um bloco claro dentro do escuro (só a página /dev/sombras usa) */
     .light {
         --color-paper: #e7e4dc;
         --color-plate: #f3f1eb;
-        --color-plate-ring: #cfcbc2;
         --color-panel: #232321;
-        --color-panel-ring: #151514;
         --color-key-dark: #3a3a37;
         --color-sunken: #e9e6de;
         --color-sunken-dark: #2b2b28;
@@ -155,44 +184,56 @@
         --color-flap-gap: #0e0e0d;
         --color-ink: #1e1e1e;
         --color-muted: #4f4e4b;
-        --color-index: #5c5b58;
-        --color-done-text: #575653;
-        --color-rule-dashed: #c4c1b9;
+        --color-off: #8e8d89;
+        --color-off-panel: #626160;
+        --color-rule: #c4c1b9;
         --color-tick-minor: #55554f;
+        --color-scrim: rgb(35 35 33 / 0.4);
     }
 
-    /* material placa (padrão) e material painel; as sombras são declaradas em cada um */
+    /* material placa (padrão) e material painel: a cor da sombra e da borda de luz */
     :root,
     .light,
     .dark,
     .dial,
     .dock,
     .toast {
-        --edge-hi: var(--plate-hi);
-        --edge-ring: var(--color-plate-ring);
-        --sink: var(--plate-sink);
+        --cast: var(--shade);
+        --cast-far: var(--shade-far);
+        --sink: var(--sink-plate);
+        --sink-far: var(--sink-plate);
+        --sink-deep: var(--sink-plate-deep);
+        --edge-hi: var(--hi-plate);
         --caret: var(--plate-caret);
-        --shadow-key:
-            inset 0 1px 0 var(--edge-hi), 0 0 0 1px var(--edge-ring), 0 1px 2px var(--drop-key);
-        --shadow-key-dark: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px var(--drop-key-dark);
-        --shadow-key-accent: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 1px 2px var(--drop-key-dark);
-        --shadow-pressed: inset 0 1px 2px var(--press);
-        --shadow-field: inset 0 1px 2px var(--sink), 0 0 0 1px var(--edge-ring);
-        --shadow-field-focus:
-            inset 0 1px 2px var(--sink), inset 0 2px 8px var(--sink), 0 0 0 1px var(--edge-ring);
-        --shadow-plate:
-            inset 0 1px 0 var(--edge-hi), 0 0 0 1px var(--edge-ring), 0 4px 12px var(--drop-plate);
-        --shadow-float:
-            inset 0 1px 0 var(--edge-hi), 0 0 0 1px var(--edge-ring), 0 8px 24px var(--drop-float);
+        /* as três elevações */
+        --shadow-sunken: inset 0 1px 3px var(--sink), inset 0 3px 9px var(--sink-far);
+        --shadow-resting: 0 1px 3px var(--cast), 0 3px 9px var(--cast-far);
+        --shadow-floating: 0 4px 12px var(--cast), 0 12px 36px var(--cast-far);
+        /* a mesma elevação apoiada para peças que mudam de altura (card do dia, ver .card.day) */
+        --drop-resting: drop-shadow(0 1px 1.5px var(--cast))
+            drop-shadow(0 3px 4.5px var(--cast-far));
+        /* os oito tokens de uso */
+        --shadow-key: var(--shadow-resting);
+        --shadow-key-dark: var(--shadow-resting);
+        --shadow-key-accent: var(--shadow-resting);
+        --shadow-plate: var(--shadow-resting);
+        --shadow-float: var(--shadow-floating);
+        --shadow-pressed: var(--shadow-sunken);
+        --shadow-field: var(--shadow-sunken);
+        /* campo focado: a mesma elevação, mais funda */
+        --shadow-field-focus: inset 0 1px 3px var(--sink), inset 0 3px 9px var(--sink-deep);
         /* foco por teclado: contorno fino na cor do texto do material */
         --focus-ring: var(--color-ink);
     }
     .dial,
     .dock,
     .toast {
-        --edge-hi: var(--panel-hi);
-        --edge-ring: var(--color-panel-ring);
-        --sink: var(--panel-sink);
+        --cast: var(--shade-panel);
+        --cast-far: var(--shade-panel-far);
+        --sink: var(--sink-panel);
+        --sink-far: var(--sink-panel);
+        --sink-deep: var(--sink-panel-deep);
+        --edge-hi: var(--hi-panel);
         --caret: var(--color-accent);
         --focus-ring: var(--color-ink-on-panel);
     }
@@ -251,6 +292,44 @@
     h2:focus {
         outline: none;
     }
+    ::selection {
+        background: var(--color-accent);
+        color: var(--color-on-accent);
+    }
+
+    /*
+     * Grão de papel (docs/design.md, "Textura"): um ladrilho de 200 px com feTurbulence (public/),
+     * rasterizado uma vez e repetido.
+     * Antes era um SVG da tela inteira por tema, e trocar de tema recalculava o ruído da tela toda
+     * num quadro só (o travamento do seletor de tema).
+     */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        mix-blend-mode: multiply;
+        background-image: url("/grain-day.svg");
+        background-size: 200px 200px;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root:not(.light) body::before {
+            mix-blend-mode: screen;
+            background-image: url("/grain-night.svg");
+        }
+    }
+    :root.dark body::before {
+        mix-blend-mode: screen;
+        background-image: url("/grain-night.svg");
+    }
+
+    /* trocar de tema: um quadro sem transições, para tudo mudar de uma vez (ver appearance.ts) */
+    :root.theme-switch :not(.seg-thumb),
+    :root.theme-switch ::before,
+    :root.theme-switch ::after,
+    :root.theme-switch ::backdrop {
+        transition: none !important;
+    }
 }
 
 /* a wordmark é um SVG preto usado como máscara: assim ela segue a cor ink dos dois temas */
@@ -260,34 +339,35 @@
 }
 
 @layer components {
-    /* ===== Grão de papel (feTurbulence por cima do fundo) ===== */
-    .grain {
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        mix-blend-mode: multiply;
-        opacity: 0.55;
-    }
-    .grain.night {
-        display: none;
-        mix-blend-mode: screen;
-        opacity: 0.35;
-    }
-    @media (prefers-color-scheme: dark) {
-        :root:not(.light) .grain.day {
-            display: none;
-        }
-        :root:not(.light) .grain.night {
-            display: block;
-        }
-    }
-    :root.dark .grain.day {
-        display: none;
-    }
-    :root.dark .grain.night {
-        display: block;
+    /*
+     * A única borda do app: 1 px com degradê vertical (a luz de cima, que some em 24 px), pintada
+     * no border-box por baixo da cor da peça (--fill). Por estar no background, segue a curva do
+     * canto igual em toda peça. Estado afundado (escolhido, pressionado) apaga a luz (--edge-hi).
+     */
+    :is(
+        .knob,
+        .key-light,
+        .font-key,
+        .key-sm,
+        .dock-key,
+        .grid-keys button,
+        .sheet-actions button,
+        .signin-btn,
+        .cal-day.today,
+        .flap,
+        .card,
+        .card-top,
+        .settings,
+        .sheet,
+        .dial,
+        .dock,
+        .toast,
+        .dev-float
+    ) {
+        border: 1px solid transparent;
+        background:
+            linear-gradient(var(--fill), var(--fill)) padding-box,
+            linear-gradient(var(--edge-hi), transparent 24px) border-box var(--fill);
     }
 
     /* ===== Página ===== */
@@ -350,34 +430,35 @@
         width: 44px;
         height: 44px;
         border-radius: 22px;
-        background: var(--color-knob);
+        --fill: var(--color-knob);
+        --edge-hi: var(--hi-panel);
         box-shadow: var(--shadow-key-dark);
     }
+    /* a marquinha verde gira com o botão (transform, não posição) */
     .knob::after {
         content: "";
         position: absolute;
-        left: 21px;
-        top: 7px;
+        left: 20px;
+        top: 6px;
         width: 2px;
         height: 10px;
         border-radius: 1px;
         background: var(--color-accent);
+        transform-origin: 1px 15px;
+        transition: transform var(--duration-small) var(--ease-spring);
     }
-    /* aberto: afunda e a marquinha gira para a direita */
     .knob[aria-expanded="true"] {
+        --edge-hi: transparent;
         box-shadow: var(--shadow-pressed);
     }
     .knob[aria-expanded="true"]::after {
-        left: 31px;
-        top: 21px;
-        width: 10px;
-        height: 2px;
+        transform: rotate(90deg);
     }
     .key-light {
         height: 44px;
         padding: 0 18px 0 12px;
         border-radius: 22px;
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         box-shadow: var(--shadow-key);
         display: inline-flex;
         align-items: center;
@@ -403,47 +484,36 @@
         left: 40px;
         margin-left: auto;
         max-width: 320px;
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         border-radius: 24px;
-        padding: 8px 18px 10px 18px;
+        padding: 14px 18px 12px 18px;
         box-shadow: var(--shadow-float);
     }
+    /* rótulos: texto normal em Plex, sem linha ao lado; o espaço separa */
     .ruler {
         display: flex;
-        align-items: center;
+        align-items: baseline;
+        justify-content: space-between;
         gap: 8px;
         margin: 0;
-        font-family: var(--font-title);
-        font-size: 10px;
-        font-weight: 400;
-        letter-spacing: 2px;
+        font-size: 14px;
+        font-weight: 600;
         color: var(--color-muted);
     }
-    .ruler::after {
-        content: "";
-        order: 1;
-        flex: 1;
-        height: 2px;
-        background: var(--color-ink);
-    }
     .ruler .count {
-        order: 2;
-        letter-spacing: 1px;
+        font-variant-numeric: tabular-nums;
     }
-    .ruler.thin::after {
-        height: 1px;
-        background: var(--color-rule-dashed);
-    }
-    .settings .ruler {
-        height: 36px;
+    .settings h2.ruler {
+        font-size: 16px;
+        color: var(--color-ink);
     }
     .settings-label {
-        margin: 8px 0;
+        margin: 16px 0 8px 0;
         font-size: 14px;
         color: var(--color-muted);
     }
     .settings-label.theme {
-        margin-top: 18px;
+        margin-top: 20px;
     }
     .font-row {
         display: flex;
@@ -454,19 +524,20 @@
         width: 48px;
         height: 44px;
         border-radius: 22px;
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         box-shadow: var(--shadow-key);
-        font-family: var(--font-title);
-        font-weight: 700;
-        font-size: 13px;
+        font-weight: 600;
+        font-size: 14px;
     }
     .font-key.big {
-        font-size: 19px;
+        font-size: 20px;
     }
     .font-key:disabled,
-    .key-sm:disabled,
-    .dock-key:disabled {
-        opacity: 0.4;
+    .key-sm:disabled {
+        color: var(--color-off);
+    }
+    .dock-key:disabled svg {
+        stroke: var(--color-off-panel);
     }
     .font-dots {
         flex: 1;
@@ -483,15 +554,17 @@
         width: 6px;
         height: 6px;
         border-radius: 3px;
-        background: var(--color-rule-dashed);
+        background: var(--color-rule);
     }
     .font-dots span.before {
-        background: var(--color-history-dot);
+        background: var(--color-off);
     }
     .font-dots span.on {
         background: var(--color-ink);
     }
+    /* tema: trilho afundado; a opção escolhida é uma peça escura que desliza (--i = 0, 1, 2) */
     .segmented {
+        position: relative;
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         height: 52px;
@@ -501,18 +574,27 @@
         padding: 4px;
         box-sizing: border-box;
     }
-    .segmented button {
+    .seg-thumb {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 4px;
+        width: calc((100% - 8px) / 3);
         border-radius: 22px;
-        font-family: var(--font-title);
-        font-weight: 700;
-        font-size: 11px;
-        letter-spacing: 1px;
+        background: var(--color-panel);
+        box-shadow: var(--shadow-pressed);
+        transform: translateX(calc(var(--i) * 100%));
+        transition: transform var(--duration-small) var(--ease-spring);
+    }
+    .segmented button {
+        position: relative;
+        border-radius: 22px;
+        font-weight: 600;
+        font-size: 14px;
         color: var(--color-muted);
     }
     .segmented button[aria-checked="true"] {
-        background: var(--color-panel);
         color: var(--color-accent);
-        box-shadow: var(--shadow-pressed);
     }
     .settings-hint {
         margin: 6px 0 0 0;
@@ -525,8 +607,6 @@
         justify-content: space-between;
         gap: 8px;
         margin-top: 16px;
-        padding-top: 10px;
-        border-top: 1px dashed var(--color-rule-dashed);
     }
     .settings-account span {
         min-width: 0;
@@ -564,10 +644,10 @@
 
     /* ===== Dial ===== */
     .dial {
-        background: var(--color-panel);
+        --fill: var(--color-panel);
         color: var(--color-ink-on-panel);
         border-radius: 24px;
-        padding: 12px 10px 0 10px;
+        padding: 11px 9px 0 9px;
         box-shadow: var(--shadow-plate);
     }
     .dial-days {
@@ -584,8 +664,8 @@
         color: var(--color-ink-on-panel);
     }
     .dial-dow {
+        font-family: var(--font-title);
         font-size: 10px;
-        font-weight: 600;
         letter-spacing: 1px;
         color: var(--color-muted-panel);
     }
@@ -613,6 +693,7 @@
     .dial-scale {
         position: relative;
         height: 30px;
+        container-type: inline-size;
     }
     .dial-scale svg {
         display: block;
@@ -621,6 +702,7 @@
     }
     .tick-base {
         stroke: var(--color-tick-minor);
+        stroke-width: 0.75;
     }
     .tick-major {
         stroke: var(--color-tick-major);
@@ -628,90 +710,76 @@
     }
     .tick-minor {
         stroke: var(--color-tick-minor);
+        stroke-width: 0.75;
     }
-    /* ponteiro: no centro da coluna do dia escolhido (--sel, de 0 a 6) */
+    /* ponteiro: no centro da coluna do dia escolhido (--sel, de 0 a 6); anda com a mola */
     .needle {
         position: absolute;
         top: 0;
-        left: clamp(
-            0%,
-            calc((var(--sel) + 0.5) * 100% / 7 - 1.5px + var(--drag, 0px)),
-            calc(100% - 3px)
-        );
-        transition: left var(--duration-state) var(--ease-out);
+        left: 0;
         width: 3px;
         height: 30px;
         border-radius: 1.5px;
         background: var(--color-accent);
+        transform: translateX(
+            clamp(
+                0px,
+                calc((var(--sel) + 0.5) * 100cqw / 7 - 1.5px + var(--drag, 0px)),
+                calc(100cqw - 3px)
+            )
+        );
+        transition: transform var(--duration-small) var(--ease-spring);
     }
 
     /* ===== Card (placa marfim) ===== */
     .card {
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         border-radius: 24px;
-        padding: 18px 18px 6px 18px;
+        padding: 17px 17px 5px 17px;
         box-shadow: var(--shadow-plate);
+    }
+    /*
+     * Card do dia: muda de altura quando a tarefa abre. A placa é feita de três peças (topo fixo,
+     * meio que estica com scaleY, pé que desce com translateY), todas só com transform; a sombra
+     * vem de um drop-shadow do conjunto, na mesma elevação apoiada.
+     */
+    .card.day {
+        position: relative;
+        isolation: isolate;
+        border-color: transparent;
+        background: none;
+        box-shadow: none;
+        filter: var(--drop-resting);
+    }
+    .card-top,
+    .card-body,
+    .card-foot {
+        position: absolute;
+        z-index: -1;
+        left: -1px;
+        right: -1px;
+        --fill: var(--color-plate);
+        background: var(--color-plate);
+    }
+    .card-top {
+        top: -1px;
+        height: 26px;
+        border-radius: 24px 24px 0 0;
+    }
+    .card-body {
+        top: 24px;
+        bottom: 23px;
+        transform-origin: 50% 0;
+    }
+    .card-foot {
+        bottom: -1px;
+        height: 25px;
+        border-radius: 0 0 24px 24px;
     }
     .card-head {
         display: flex;
         align-items: center;
         gap: 14px;
-    }
-    .flaps {
-        display: flex;
-        gap: 4px;
-    }
-    .flap {
-        position: relative;
-        display: block;
-        width: 52px;
-        height: 72px;
-        border-radius: 12px;
-        background: var(--color-panel);
-        box-shadow: var(--shadow-key-dark);
-        overflow: hidden;
-    }
-    .flap::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        height: 36px;
-        background: var(--color-flap-top);
-    }
-    .flap::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 35px;
-        height: 2px;
-        background: var(--color-flap-gap);
-    }
-    .flap-digit {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: var(--font-title);
-        font-weight: 700;
-        font-size: 52px;
-        color: var(--color-ink-on-panel);
-    }
-    .flaps.small .flap {
-        width: 44px;
-        height: 60px;
-    }
-    .flaps.small .flap::before {
-        height: 30px;
-    }
-    .flaps.small .flap::after {
-        top: 29px;
-    }
-    .flaps.small .flap-digit {
-        font-size: 42px;
     }
     .card-title {
         flex: 1;
@@ -730,13 +798,11 @@
         color: var(--color-muted);
     }
     .card > .ruler {
-        margin: 18px 0 2px 0;
+        margin: 20px 0 4px 0;
     }
     .past-tag {
         margin: 0 0 14px 0;
-        font-family: var(--font-title);
-        font-size: 10px;
-        letter-spacing: 2px;
+        font-size: 13px;
         color: var(--color-muted);
     }
     .empty {
@@ -746,25 +812,173 @@
         color: var(--color-muted);
     }
 
+    /* ===== Placas de virar (split-flap) ===== */
+    .flaps {
+        display: flex;
+        gap: 4px;
+    }
+    .flap {
+        position: relative;
+        display: block;
+        width: 52px;
+        height: 72px;
+        border-radius: 12px;
+        --fill: var(--color-panel);
+        --edge-hi: var(--hi-panel);
+        box-shadow: var(--shadow-key-dark);
+        overflow: hidden;
+        perspective: 320px;
+    }
+    /* a linha do meio fica sempre por cima */
+    .flap::after {
+        content: "";
+        position: absolute;
+        z-index: 3;
+        left: 0;
+        right: 0;
+        top: calc(50% - 1px);
+        height: 2px;
+        background: var(--color-flap-gap);
+    }
+    .flap-half {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 50%;
+        overflow: hidden;
+        background: var(--color-panel);
+    }
+    .flap-half.top {
+        top: 0;
+        background: var(--color-flap-top);
+    }
+    .flap-half.bottom {
+        bottom: 0;
+    }
+    .flap-half b {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 200%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 52px;
+        color: var(--color-ink-on-panel);
+    }
+    .flap-half.top b {
+        top: 0;
+    }
+    .flap-half.bottom b {
+        bottom: 0;
+    }
+    .flaps.small .flap {
+        width: 44px;
+        height: 60px;
+    }
+    .flaps.small .flap-half b {
+        font-size: 42px;
+    }
+    /*
+     * Ao trocar: a metade de cima do algarismo antigo gira para baixo (0 a −90°, escurecendo); em
+     * seguida a metade de baixo do novo cai de 90° a 0° e assenta com a mola. O da direita vira
+     * um pouco depois.
+     */
+    .flap-leaf {
+        z-index: 2;
+        backface-visibility: hidden;
+        will-change: transform;
+    }
+    .flap-leaf::before {
+        content: "";
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        background: var(--color-flap-gap);
+        opacity: 0;
+    }
+    .flap-leaf.top {
+        transform-origin: 50% 100%;
+        animation: flap-top var(--duration-press) var(--ease-in) var(--flap-delay, 0ms) both;
+    }
+    .flap-leaf.top::before {
+        animation: flap-shade-in var(--duration-press) var(--ease-in) var(--flap-delay, 0ms) both;
+    }
+    .flap-leaf.bottom {
+        transform-origin: 50% 0;
+        animation: flap-bottom var(--duration-small) var(--ease-spring)
+            calc(var(--flap-delay, 0ms) + var(--duration-press)) both;
+    }
+    .flap-leaf.bottom::before {
+        animation: flap-shade-out var(--duration-small) var(--ease-spring)
+            calc(var(--flap-delay, 0ms) + var(--duration-press)) both;
+    }
+    .flap + .flap {
+        --flap-delay: 60ms;
+    }
+    @keyframes flap-top {
+        from {
+            transform: rotateX(0deg);
+        }
+        to {
+            transform: rotateX(-90deg);
+        }
+    }
+    @keyframes flap-bottom {
+        from {
+            transform: rotateX(90deg);
+        }
+        to {
+            transform: rotateX(0deg);
+        }
+    }
+    @keyframes flap-shade-in {
+        to {
+            opacity: 0.5;
+        }
+    }
+    @keyframes flap-shade-out {
+        from {
+            opacity: 0.5;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+    /* nome do dia e mês trocam com um fade curto, junto com as placas */
+    .swap {
+        animation: fade-in var(--duration-fade) ease-out;
+    }
+
     /* ===== Tarefa ===== */
     .task {
-        border-bottom: 1px dashed var(--color-rule-dashed);
+        position: relative;
+        border-bottom: 1px dashed var(--color-rule);
+        touch-action: pan-y;
     }
     .task:last-child {
         border-bottom: 0;
     }
     .task-row {
+        position: relative;
         display: flex;
         align-items: center;
         gap: 12px;
         min-height: 52px;
+        -webkit-user-select: none;
+        user-select: none;
+        transition:
+            transform var(--duration-small) var(--ease-spring),
+            background-color var(--duration-small) var(--ease-spring);
     }
     .task-n {
         flex: none;
         width: 16px;
-        font-family: var(--font-title);
-        font-size: 11px;
-        color: var(--color-index);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+        color: var(--color-muted);
     }
     /* caixa: vazada com borda ink; feita = verde afundada com ✕ on-accent */
     .box {
@@ -814,33 +1028,33 @@
         overflow-wrap: anywhere;
     }
     .done .task-text {
-        color: var(--color-done-text);
+        color: var(--color-muted);
         text-decoration: line-through;
     }
-    .temp {
-        opacity: 0.6;
+    /* ainda sem confirmação do servidor */
+    .temp .task-text {
+        color: var(--color-muted);
     }
+    .temp .box {
+        border-color: var(--color-off);
+    }
+    /* horário: texto em Space Mono; atrasado = etiqueta verde (estado, não enfeite) */
     .time-tag {
         flex: none;
         font-family: var(--font-title);
         font-weight: 700;
         font-size: 13px;
         color: var(--color-muted);
-        padding: 2px 6px;
-        border: 1px solid var(--color-history-dot);
-        border-radius: 6px;
     }
     .time-tag.late {
         padding: 3px 7px;
-        border: 0;
+        border-radius: 6px;
         background: var(--color-accent);
         color: var(--color-on-accent);
     }
     .rec-tag {
         flex: none;
-        font-family: var(--font-title);
-        font-size: 11px;
-        letter-spacing: 1px;
+        font-size: 12px;
         color: var(--color-muted);
     }
     .note-ic {
@@ -854,12 +1068,17 @@
         height: 14px;
     }
 
-    /* tarefa aberta: a linha afunda no próprio card */
+    /*
+     * Tarefa aberta: a linha afunda no próprio card. O painel desliza de baixo da linha
+     * (translateY dentro de um recorte) e o que está abaixo acompanha (FLIP, ver flip.ts).
+     */
     .task.open {
         margin: 6px -10px 4px -10px;
-        padding: 0 10px 14px 10px;
         border: 0;
-        border-radius: 16px;
+    }
+    .task.open .task-row {
+        padding: 0 10px;
+        border-radius: 16px 16px 0 0;
         background: var(--color-sunken);
         box-shadow: var(--shadow-field);
     }
@@ -869,9 +1088,18 @@
     .task:has(+ .task.open) {
         border-bottom: 0;
     }
+    .task-panel {
+        overflow: hidden;
+    }
+    .task-panel > div {
+        padding: 0 10px 14px 10px;
+        border-radius: 0 0 16px 16px;
+        background: var(--color-sunken);
+    }
     .task-note {
         /* na coluna do texto: número 16 + 12 + caixa 24 + 12 */
         margin: 0 0 14px 64px;
+        padding-top: 2px;
         font-size: 15px;
         line-height: 1.45;
         color: var(--color-muted);
@@ -889,7 +1117,7 @@
         min-width: 44px;
         padding: 0 16px;
         border-radius: 22px;
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         box-shadow: var(--shadow-key);
         font-size: 14px;
     }
@@ -918,9 +1146,9 @@
         bottom: var(--float-bottom);
         max-width: 688px;
         margin: 0 auto;
-        background: var(--color-panel);
+        --fill: var(--color-panel);
         border-radius: 32px;
-        padding: 8px;
+        padding: 7px;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -947,7 +1175,7 @@
         width: 48px;
         height: 48px;
         border-radius: 24px;
-        background: var(--color-key-dark);
+        --fill: var(--color-key-dark);
         box-shadow: var(--shadow-key-dark);
         display: flex;
         align-items: center;
@@ -971,7 +1199,8 @@
         stroke-linejoin: round;
     }
     .dock-key.accent {
-        background: var(--color-accent);
+        --fill: var(--color-accent);
+        --edge-hi: var(--hi-plate);
         box-shadow: var(--shadow-key-accent);
     }
     .dock-key.accent svg {
@@ -995,10 +1224,8 @@
         justify-content: center;
         margin: 0;
         color: var(--color-ink-on-panel);
-        font-family: var(--font-title);
-        font-weight: 700;
+        font-weight: 600;
         font-size: 15px;
-        letter-spacing: 1px;
     }
 
     /* desfazer: etiqueta grafite acima da barra */
@@ -1018,9 +1245,9 @@
         align-items: center;
         gap: 12px;
         max-width: 100%;
-        padding: 0 8px 0 16px;
+        padding: 0 7px 0 15px;
         border-radius: 22px;
-        background: var(--color-panel);
+        --fill: var(--color-panel);
         color: var(--color-ink-on-panel);
         box-shadow: var(--shadow-float);
         font-size: 15px;
@@ -1048,11 +1275,10 @@
         max-height: calc(100dvh - var(--float-bottom) - max(16px, env(safe-area-inset-top)));
         margin: 0 auto;
         box-sizing: border-box;
-        border: 0;
         border-radius: 28px;
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         color: var(--color-ink);
-        padding: 8px 16px 16px 16px;
+        padding: 7px 15px 15px 15px;
         box-shadow: var(--shadow-float);
         overflow-y: auto;
         overscroll-behavior: contain;
@@ -1062,7 +1288,7 @@
         max-height: calc(var(--vvh) - 16px);
     }
     .sheet::backdrop {
-        background: color-mix(in srgb, var(--color-panel) 40%, transparent);
+        background: var(--color-scrim);
     }
     .sheet-form {
         display: flex;
@@ -1074,10 +1300,11 @@
         width: 40px;
         height: 5px;
         border-radius: 3px;
-        background: var(--color-rule-dashed);
+        background: var(--color-rule);
     }
     .sheet h2.ruler {
-        font-size: 11px;
+        font-size: 17px;
+        color: var(--color-ink);
     }
     .field {
         height: 48px;
@@ -1098,21 +1325,19 @@
         line-height: 1.45;
         resize: none;
     }
+    .field::placeholder {
+        color: var(--color-muted);
+    }
     /* foco no campo: afunda mais (sem contorno; o cursor verde vem da base) */
     .field:focus,
     .dock-field:focus {
         box-shadow: var(--shadow-field-focus);
     }
     .time-chip {
-        order: 2;
         font-family: var(--font-title);
         font-weight: 700;
-        font-size: 13px;
-        background: var(--color-panel);
-        color: var(--color-accent);
-        padding: 3px 8px;
-        border-radius: 6px;
-        letter-spacing: 0;
+        font-size: 14px;
+        color: var(--color-ink);
     }
     .grid-keys {
         display: grid;
@@ -1127,16 +1352,19 @@
     }
     .grid-keys.seven {
         grid-template-columns: repeat(7, minmax(0, 1fr));
-        font-size: 13px;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 14px;
     }
     .grid-keys button {
         height: 44px;
         border-radius: 12px;
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         box-shadow: var(--shadow-key);
     }
     .grid-keys button[aria-pressed="true"] {
-        background: var(--color-accent);
+        --fill: var(--color-accent);
+        --edge-hi: transparent;
         color: var(--color-on-accent);
         box-shadow: var(--shadow-pressed);
     }
@@ -1145,9 +1373,8 @@
     }
     /* repetir: escolhido = tecla escura afundada */
     .grid-keys.seven button[aria-pressed="true"] {
-        background: var(--color-panel);
+        --fill: var(--color-panel);
         color: var(--color-ink-on-panel);
-        box-shadow: var(--shadow-pressed);
     }
     .sheet-links {
         margin: -6px 0 0 0;
@@ -1161,23 +1388,23 @@
     /* presas ao pé da folha: Salvar nunca fica escondido na rolagem */
     .sheet-actions {
         position: sticky;
-        bottom: 0;
+        bottom: -15px;
         display: flex;
         gap: 8px;
-        margin: 6px 0 -16px 0;
-        padding: 8px 0 16px 0;
+        margin: 6px 0 -15px 0;
+        padding: 8px 0 15px 0;
         background: var(--color-plate);
     }
     .sheet-actions button {
         flex: 1;
         height: 48px;
         border-radius: 24px;
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         box-shadow: var(--shadow-key);
         font-size: 16px;
     }
     .sheet-actions .save {
-        background: var(--color-accent);
+        --fill: var(--color-accent);
         color: var(--color-on-accent);
         box-shadow: var(--shadow-key-accent);
         font-weight: 600;
@@ -1185,7 +1412,7 @@
 
     /* ===== Calendário ===== */
     .cal-card {
-        padding: 18px 14px 12px 14px;
+        padding: 17px 13px 11px 13px;
     }
     .cal-card .card-head {
         padding: 0 4px;
@@ -1204,8 +1431,8 @@
     .cal-week abbr {
         text-align: center;
         text-decoration: none;
-        font-family: var(--font-title);
-        font-size: 11px;
+        font-size: 12px;
+        font-weight: 600;
         color: var(--color-muted);
     }
     .cal-grid {
@@ -1223,9 +1450,9 @@
         align-items: center;
         justify-content: center;
         gap: 3px;
-        font-family: var(--font-title);
-        font-weight: 700;
-        font-size: 15px;
+        font-weight: 600;
+        font-size: 16px;
+        font-variant-numeric: tabular-nums;
     }
     .cal-day .dot {
         width: 4px;
@@ -1235,16 +1462,17 @@
     }
     .cal-day.past {
         font-weight: 400;
-        color: var(--color-index);
+        color: var(--color-muted);
     }
     .cal-day.past .dot {
-        background: var(--color-history-dot);
+        background: var(--color-off);
     }
     .cal-day:disabled {
-        opacity: 0.4;
+        color: var(--color-off);
     }
     .cal-day.today {
-        background: var(--color-panel);
+        --fill: var(--color-panel);
+        --edge-hi: var(--hi-panel);
         color: var(--color-accent);
         box-shadow: var(--shadow-key-dark);
     }
@@ -1255,9 +1483,7 @@
         display: flex;
         gap: 16px;
         justify-content: center;
-        margin: 4px 4px 0 4px;
-        padding-top: 8px;
-        border-top: 1px dashed var(--color-rule-dashed);
+        margin: 12px 4px 0 4px;
         font-size: 12px;
         color: var(--color-muted);
     }
@@ -1273,7 +1499,7 @@
         background: var(--color-ink);
     }
     .cal-legend i.hist {
-        background: var(--color-history-dot);
+        background: var(--color-off);
     }
 
     /* ===== Entrar ===== */
@@ -1296,7 +1522,7 @@
         margin: 0;
     }
     .signin .dial {
-        padding-top: 16px;
+        padding-top: 15px;
     }
     .signin-days {
         display: grid;
@@ -1314,8 +1540,7 @@
     .signin-tagline {
         margin: 0;
         text-align: center;
-        font-family: var(--font-title);
-        font-weight: 700;
+        font-weight: 600;
         font-size: 22px;
         line-height: 1.3;
     }
@@ -1331,7 +1556,8 @@
     .signin-btn {
         height: 56px;
         border-radius: 28px;
-        background: var(--color-panel);
+        --fill: var(--color-panel);
+        --edge-hi: var(--hi-panel);
         color: var(--color-ink-on-panel);
         box-shadow: var(--shadow-key-dark);
         font-size: 17px;
@@ -1352,7 +1578,23 @@
         align-self: center;
     }
 
-    /* ===== Toque: a tecla afunda enquanto é pressionada ===== */
+    /* ===== Toque: a tecla afunda na hora e volta com a mola ao soltar ===== */
+    :is(
+        .knob,
+        .key-light,
+        .font-key,
+        .key-sm,
+        .dock-key,
+        .grid-keys button,
+        .sheet-actions button,
+        .signin-btn,
+        .cal-day,
+        .segmented button
+    ) {
+        transition:
+            box-shadow var(--duration-press) var(--ease-spring),
+            translate var(--duration-press) var(--ease-spring);
+    }
     :is(
             .knob,
             .key-light,
@@ -1362,21 +1604,28 @@
             .grid-keys button,
             .sheet-actions button,
             .signin-btn,
-            .cal-day,
-            .segmented button
+            .cal-day
         ):active:not(:disabled) {
+        --edge-hi: transparent;
         box-shadow: var(--shadow-pressed);
+        translate: 0 1px;
+        transition-duration: 0s;
     }
+    /* texto tocável: fica no tom desligado enquanto é pressionado */
     :is(
-        .dial-day,
         .task-text,
-        .box-btn,
         .remove,
         .text-link,
-        .toast-btn,
-        .sheet-links button
+        .sheet-links button,
+        .segmented button[aria-checked="false"]
     ):active {
-        opacity: 0.6;
+        color: var(--color-off);
+    }
+    :is(.dial-day, .toast-btn):active {
+        color: var(--color-off-panel);
+    }
+    .box-btn:active .box {
+        border-color: var(--color-off);
     }
 
     /* ===== /dev/sombras (só desenvolvimento) ===== */
@@ -1420,82 +1669,20 @@
     .dev-float {
         padding: 24px 16px;
         border-radius: 24px;
-        background: var(--color-plate);
+        --fill: var(--color-plate);
         box-shadow: var(--shadow-float);
         font-size: 14px;
+    }
+    .dev-label {
+        margin: 8px 0 0 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-muted);
     }
 
     /* ===== Movimento ===== */
 
-    /* tecla: afunda na hora do toque e volta suave ao soltar */
-    :is(
-        .knob,
-        .key-light,
-        .font-key,
-        .key-sm,
-        .dock-key,
-        .grid-keys button,
-        .sheet-actions button,
-        .signin-btn,
-        .cal-day,
-        .segmented button
-    ) {
-        transition:
-            box-shadow var(--duration-press) var(--ease-out),
-            translate var(--duration-press) var(--ease-out),
-            background-color var(--duration-press) var(--ease-out);
-    }
-    :is(
-            .knob,
-            .key-light,
-            .font-key,
-            .key-sm,
-            .dock-key,
-            .grid-keys button,
-            .sheet-actions button,
-            .signin-btn,
-            .cal-day,
-            .segmented button
-        ):active:not(:disabled) {
-        translate: 0 1px;
-        transition-duration: 0s;
-    }
-    .knob::after {
-        transition:
-            left var(--duration-state) var(--ease-out),
-            top var(--duration-state) var(--ease-out),
-            width var(--duration-state) var(--ease-out),
-            height var(--duration-state) var(--ease-out);
-    }
-
-    /* placa de virar: a metade de cima do algarismo antigo cai sobre o novo */
-    .flap {
-        perspective: 240px;
-    }
-    .flap-leaf {
-        position: absolute;
-        z-index: 1;
-        left: 0;
-        right: 0;
-        top: 0;
-        height: 50%;
-        overflow: hidden;
-        background: var(--color-flap-top);
-        transform-origin: 50% 100%;
-        backface-visibility: hidden;
-        animation: flap-fall var(--duration-state) var(--ease-in) forwards;
-    }
-    .flap-leaf .flap-digit {
-        bottom: auto;
-        height: 200%;
-    }
-    @keyframes flap-fall {
-        to {
-            transform: rotateX(-90deg);
-        }
-    }
-
-    /* ponteiro: segue o dedo sem atraso enquanto o dial é arrastado */
+    /* dial: o ponteiro segue o dedo sem atraso enquanto é arrastado */
     .dial {
         touch-action: pan-y;
         -webkit-user-select: none;
@@ -1505,73 +1692,49 @@
         transition: none;
     }
 
-    /* tarefa abrindo no lugar: o painel cresce de 0 até a altura dele */
-    .task {
-        transition:
-            background-color var(--duration-state) var(--ease-out),
-            box-shadow var(--duration-state) var(--ease-out);
+    /* folha: sobe de fora da tela; ao fechar, desce pelo mesmo caminho (classe leaving) */
+    .sheet {
+        transition: transform var(--duration-sheet) var(--ease-spring);
     }
-    .task-panel {
-        display: grid;
-        animation: grow-in var(--duration-state) var(--ease-out);
+    .sheet::backdrop {
+        transition: opacity var(--duration-sheet) var(--ease-spring);
     }
-    .task-panel > div {
-        min-height: 0;
-        overflow: hidden;
+    .sheet.leaving {
+        transform: translateY(calc(100% + var(--float-bottom) + 40px));
+        pointer-events: none;
     }
-    @keyframes grow-in {
-        from {
-            grid-template-rows: 0fr;
-            opacity: 0;
+    .sheet.leaving::backdrop {
+        opacity: 0;
+    }
+    @starting-style {
+        .sheet[open] {
+            transform: translateY(calc(100% + var(--float-bottom) + 40px));
         }
-        to {
-            grid-template-rows: 1fr;
-            opacity: 1;
-        }
-    }
-
-    /* folha subindo e fundo escurecendo */
-    .sheet[open] {
-        animation: rise-in var(--duration-enter) var(--ease-out);
-    }
-    .sheet[open]::backdrop {
-        animation: fade-in var(--duration-enter) var(--ease-out);
-    }
-    @keyframes rise-in {
-        from {
-            transform: translateY(24px);
+        .sheet[open]::backdrop {
             opacity: 0;
         }
     }
 
-    /* ajustes saindo do botão giratório (canto de cima à direita) */
+    /* ajustes: crescem do botão giratório (centro dele) e recolhem para ele */
     .settings {
-        transform-origin: calc(100% - 22px) -16px;
-        animation: pop-in var(--duration-state) var(--ease-out);
+        transform-origin: calc(100% - 22px) -36px;
+        transition:
+            transform var(--duration-small) var(--ease-spring),
+            opacity var(--duration-small) var(--ease-spring);
     }
-    @keyframes pop-in {
-        from {
-            transform: scale(0.92);
-            opacity: 0;
-        }
+    .settings.closing {
+        transform: scale(0.2);
+        opacity: 0;
+        pointer-events: none;
     }
-    @keyframes fade-in {
-        from {
+    @starting-style {
+        .settings {
+            transform: scale(0.2);
             opacity: 0;
         }
     }
 
     /* deslizar a tarefa: ela segue o dedo e revela por baixo o que vai acontecer */
-    .task {
-        position: relative;
-        touch-action: pan-y;
-    }
-    .task-row {
-        position: relative;
-        transition: transform var(--duration-state) var(--ease-out);
-        -webkit-user-select: none;
-        user-select: none;
-    }
     .task.swiping {
         overflow: hidden;
     }
@@ -1591,12 +1754,8 @@
         background: var(--color-sunken);
         box-shadow: var(--shadow-field);
         color: var(--color-muted);
-        font-family: var(--font-title);
-        font-size: 11px;
-        letter-spacing: 2px;
-        transition:
-            background-color var(--duration-press) var(--ease-out),
-            color var(--duration-press) var(--ease-out);
+        font-size: 14px;
+        font-weight: 600;
     }
     .task.swiping .swipe-under {
         display: flex;
@@ -1615,23 +1774,49 @@
         color: var(--color-ink-on-panel);
     }
 
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+    }
+
     /*
-     * Movimento reduzido: nada se desloca. Teclas e estados trocam na hora; as peças que entram
-     * (folha, ajustes, tarefa aberta) só aparecem com um fade curto.
+     * Movimento reduzido: nada se desloca. Teclas, ponteiro, placas e tema trocam na hora; folha,
+     * ajustes e tarefa aberta só aparecem e somem com um fade curto.
      */
     @media (prefers-reduced-motion: reduce) {
         :root {
             --duration-press: 0s;
-            --duration-state: 0s;
-            --duration-enter: 150ms;
+            --duration-small: 0s;
         }
         .flap-leaf {
             display: none;
         }
-        .sheet[open],
+        .sheet,
+        .sheet.leaving,
         .settings,
+        .settings.closing {
+            transform: none;
+        }
+        .sheet,
+        .settings {
+            transition: opacity var(--duration-fade) ease-out;
+        }
+        .sheet.leaving {
+            opacity: 0;
+        }
+        @starting-style {
+            .sheet[open],
+            .settings {
+                transform: none;
+                opacity: 0;
+            }
+        }
+        .sheet::backdrop {
+            transition-duration: var(--duration-fade);
+        }
         .task-panel {
-            animation: fade-in var(--duration-enter) var(--ease-out);
+            animation: fade-in var(--duration-fade) ease-out;
         }
         :is(
                 .knob,
@@ -1642,8 +1827,7 @@
                 .grid-keys button,
                 .sheet-actions button,
                 .signin-btn,
-                .cal-day,
-                .segmented button
+                .cal-day
             ):active:not(:disabled) {
             translate: none;
         }

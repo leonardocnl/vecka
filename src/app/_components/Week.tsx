@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { flushSync } from "react-dom";
 import {
+    Fragment,
     useCallback,
     useEffect,
     useLayoutEffect,
@@ -49,6 +51,16 @@ import { signOut } from "@/app/_auth/actions";
 import { Wordmark } from "./Wordmark";
 import { dialSteps, resist, swipeClick, swipeDown, swipeEnd, swipeMove, taskSwipe } from "./swipe";
 import {
+    measure,
+    measureClosed,
+    panelOffsets,
+    playFlip,
+    reducedMotion,
+    settled,
+    stopFlip,
+    type Snapshot,
+} from "./motion";
+import {
     applyFontStep,
     applyTheme,
     FONT_STEPS,
@@ -85,9 +97,9 @@ const pickFrom = (time: string | null): Pick =>
         : noPick;
 
 const THEMES: { value: ThemeChoice; label: string }[] = [
-    { value: "auto", label: "AUTO" },
-    { value: "light", label: "CLARO" },
-    { value: "dark", label: "ESCURO" },
+    { value: "auto", label: "Auto" },
+    { value: "light", label: "Claro" },
+    { value: "dark", label: "Escuro" },
 ];
 
 function NoteIcon() {
@@ -155,32 +167,51 @@ export function DialScale({ sel }: { sel: number | null }) {
 }
 
 /**
- * Placas de virar com dois algarismos. Quando o valor muda, a metade de cima do algarismo antigo
- * cai por cima do novo (só CSS; com movimento reduzido, a troca é direta).
+ * Uma placa de virar (split-flap): metade de cima e metade de baixo, com a linha do meio sempre à
+ * vista. Ao trocar, a metade de cima do algarismo antigo gira para baixo e a de baixo do novo cai
+ * e assenta (só CSS, ver globals.css). Se o valor muda de novo no meio, a virada anterior termina
+ * na hora e a nova começa do algarismo que estava chegando.
  */
-function Flaps({ value, label, small }: { value: string; label: string; small?: boolean }) {
-    const [shown, setShown] = useState(value);
-    const [old, setOld] = useState<string | null>(null);
-    if (value !== shown) {
-        setOld(shown);
-        setShown(value);
+function FlapDigit({ digit }: { digit: string }) {
+    const [shown, setShown] = useState(digit);
+    const [from, setFrom] = useState<string | null>(null);
+    if (digit !== shown) {
+        setShown(digit);
+        setFrom(reducedMotion() ? null : shown);
     }
+    return (
+        <span className="flap">
+            <span className="flap-half top">
+                <b>{shown}</b>
+            </span>
+            <span className="flap-half bottom">
+                <b>{from ?? shown}</b>
+            </span>
+            {from !== null && (
+                <Fragment key={from + shown}>
+                    <span className="flap-half top flap-leaf">
+                        <b>{from}</b>
+                    </span>
+                    <span
+                        className="flap-half bottom flap-leaf"
+                        onAnimationEnd={(e) => {
+                            if (e.animationName === "flap-bottom") setFrom(null);
+                        }}
+                    >
+                        <b>{shown}</b>
+                    </span>
+                </Fragment>
+            )}
+        </span>
+    );
+}
+
+/** Placas de virar com dois algarismos; cada um vira sozinho, e só se mudou. */
+function Flaps({ value, label, small }: { value: string; label: string; small?: boolean }) {
     return (
         <div className={cx("flaps", !!small && "small")} role="img" aria-label={label}>
             {[...value].map((digit, i) => (
-                <span className="flap" key={i}>
-                    <span className="flap-digit">{digit}</span>
-                    {old && old[i] !== digit && (
-                        <span
-                            className="flap-leaf"
-                            key={old + value}
-                            aria-hidden="true"
-                            onAnimationEnd={() => setOld(null)}
-                        >
-                            <span className="flap-digit">{old[i]}</span>
-                        </span>
-                    )}
-                </span>
+                <FlapDigit key={i} digit={digit} />
             ))}
         </div>
     );
@@ -197,13 +228,19 @@ export function Week(props: actions.Week) {
     const [dayIdx, setDayIdx] = useState(0);
     const [cal, setCal] = useState({ y: 0, m: 0 });
     const [openId, setOpenId] = useState<number | null>(null);
+    // tarefa fechando: o painel fica na tela até terminar de deslizar para baixo da linha
+    const [closingId, setClosingId] = useState<number | null>(null);
     const [sheet, setSheet] = useState<Sheet | null>(null);
+    // a folha descendo: continua aberta até a transição terminar
+    const [sheetLeaving, setSheetLeaving] = useState(false);
     const [editText, setEditText] = useState("");
     const [editNote, setEditNote] = useState("");
     const [editDays, setEditDays] = useState<number[]>([]);
     const [pick, setPick] = useState<Pick>(noPick);
     const [addText, setAddText] = useState("");
-    const [settingsOpen, setSettingsOpen] = useState(false);
+    // ajustes recolhendo: ficam na tela até voltar para o botão giratório
+    const [settings, setSettings] = useState<"closed" | "open" | "closing">("closed");
+    const settingsOpen = settings === "open";
     const [error, setError] = useState<string | null>(null);
     const [pending, setPending] = useState<PendingDelete | null>(null);
     // o resultado dos gestos, para os leitores de tela
@@ -222,6 +259,11 @@ export function Week(props: actions.Week) {
     const scrollTop = useRef(false);
     const pendingRef = useRef<PendingDelete | null>(null);
     const sheetRef = useRef<HTMLDialogElement>(null);
+    const settingsRef = useRef<HTMLElement>(null);
+    const cardRef = useRef<HTMLElement>(null);
+    // FLIP da tarefa abrindo/fechando: medida de antes e o número da rodada (a mais nova vale)
+    const flipFirst = useRef<{ first: Snapshot; panels: Map<string, number> } | null>(null);
+    const flipRun = useRef(0);
 
     const focus = (id: string) => {
         focusNext.current = id;
@@ -379,17 +421,70 @@ export function Week(props: actions.Week) {
 
     // ---------- navegação ----------
 
-    const resetForms = () => {
+    const closeSettings = () => setSettings((s) => (s === "open" ? "closing" : s));
+
+    // sem animação: some a tarefa aberta (trocar de dia ou de tela, remover)
+    const dropOpen = () => {
+        flipRun.current++;
+        flipFirst.current = null;
+        if (cardRef.current) stopFlip(cardRef.current);
         setOpenId(null);
-        setSettingsOpen(false);
+        setClosingId(null);
+    };
+
+    // abrir/fechar a tarefa no lugar: mede antes, o React muda, o efeito abaixo anima a diferença
+    const toggleOpen = (id: number) => {
+        const card = cardRef.current;
+        const opening = openId !== id;
+        if (!card || reducedMotion()) {
+            setOpenId(opening ? id : null);
+            setClosingId(null);
+            return;
+        }
+        flipFirst.current = { first: measure(card), panels: panelOffsets(card) };
+        setClosingId(opening ? openId : id);
+        setOpenId(opening ? id : null);
+    };
+
+    useLayoutEffect(() => {
+        const card = cardRef.current;
+        const f = flipFirst.current;
+        if (!card || !f) return;
+        flipFirst.current = null;
+        stopFlip(card);
+        const closing = closingId !== null ? card.querySelector(`#task-${closingId}`) : null;
+        const panels = [openId, closingId].flatMap((id) => {
+            const el = id !== null ? card.querySelector(`#panel-${id} > div`) : null;
+            const from = f.panels.get(`panel-${id}`);
+            return el ? [{ el, from: from ?? null, closing: id === closingId }] : [];
+        });
+        const anims = playFlip(card, f.first, closing && measureClosed(card, closing), panels);
+        const run = ++flipRun.current;
+        void Promise.all(anims.map((a) => a.finished)).then(
+            () => {
+                if (run !== flipRun.current) return;
+                // fechou: tira o painel e zera os transforms no mesmo quadro (o layout já bate)
+                flushSync(() => setClosingId(null));
+                stopFlip(card);
+            },
+            () => {},
+        );
+    }, [openId, closingId]);
+
+    const resetForms = () => {
+        dropOpen();
+        closeSettings();
         setAddText("");
     };
 
     const pickDay = (idx: number) => {
         if (idx === selIdx) return;
-        setOpenId(null);
+        dropOpen();
         setSelIdx(idx);
     };
+
+    const onDialDay = (e: { currentTarget: HTMLElement }) =>
+        pickDay(Number(e.currentTarget.dataset.idx));
 
     const showView = (next: View) => {
         resetForms();
@@ -520,6 +615,7 @@ export function Week(props: actions.Week) {
         setEditDays([]);
         setPick(noPick);
         setSheet({ mode: "new" });
+        setSheetLeaving(false);
     };
 
     const startEdit = (task: Task) => {
@@ -528,14 +624,29 @@ export function Week(props: actions.Week) {
         setPick(pickFrom(task.time));
         setEditDays(task.recurringDays ? [...task.recurringDays] : []);
         setSheet({ mode: "edit", task });
+        setSheetLeaving(false);
     };
 
-    const closeSheet = useCallback(() => {
-        setSheet((current) => {
-            if (current) focus(current.mode === "edit" ? `tx-${current.task.id}` : "add-text");
-            return null;
+    // fechar: a folha desce (classe leaving); só depois sai do modo modal e o foco volta
+    const closeSheet = () => setSheetLeaving(true);
+
+    useEffect(() => {
+        const dialog = sheetRef.current;
+        if (!sheetLeaving || !dialog) return;
+        let live = true;
+        void settled(dialog).then((done) => {
+            if (!live || !done) return;
+            dialog.close();
+            setSheetLeaving(false);
+            setSheet((current) => {
+                if (current) focus(current.mode === "edit" ? `tx-${current.task.id}` : "add-text");
+                return null;
+            });
         });
-    }, []);
+        return () => {
+            live = false;
+        };
+    }, [sheetLeaving]);
 
     const submitSheet = (event: FormEvent) => {
         event.preventDefault();
@@ -546,8 +657,7 @@ export function Week(props: actions.Week) {
         const days = editDays.length ? [...editDays] : null;
         if (sheet.mode === "new") {
             addTask(text, days, time);
-            setSheet(null);
-            focus("add-text");
+            closeSheet();
             return;
         }
         const task = sheet.task;
@@ -567,8 +677,7 @@ export function Week(props: actions.Week) {
                     : t,
             ),
         );
-        setSheet(null);
-        focus(`tx-${task.id}`);
+        closeSheet();
         void sync(actions.updateTask({ id: task.id, text, time, note, days, date: iso }));
     };
 
@@ -599,7 +708,7 @@ export function Week(props: actions.Week) {
         const index = tasks.findIndex((t) => t.id === task.id);
         if (index < 0) return;
         setTasks((list) => list.filter((t) => t.id !== task.id));
-        setOpenId(null);
+        dropOpen();
         const pd = { task, index, timer: setTimeout(commitDelete, UNDO_MS) };
         pendingRef.current = pd;
         setPending(pd);
@@ -631,11 +740,25 @@ export function Week(props: actions.Week) {
         if (!settingsOpen) return;
         const onDown = (e: PointerEvent) => {
             const target = e.target as Element;
-            if (!target.closest("#settings, #knob")) setSettingsOpen(false);
+            if (!target.closest("#settings, #knob")) closeSettings();
         };
         document.addEventListener("pointerdown", onDown);
         return () => document.removeEventListener("pointerdown", onDown);
     }, [settingsOpen]);
+
+    // recolhendo: quando a transição termina, os ajustes saem da tela (tocar de novo reabre do
+    // ponto em que estavam)
+    useEffect(() => {
+        const el = settingsRef.current;
+        if (settings !== "closing" || !el) return;
+        let live = true;
+        void settled(el).then((done) => {
+            if (live && done) setSettings("closed");
+        });
+        return () => {
+            live = false;
+        };
+    }, [settings]);
 
     // Esc fecha ajustes, a tarefa aberta ou volta uma tela (a folha fecha pelo próprio <dialog>)
     useEffect(() => {
@@ -643,11 +766,11 @@ export function Week(props: actions.Week) {
             if (e.key !== "Escape" && e.key !== "Esc") return;
             if (sheet) return;
             if (settingsOpen) {
-                setSettingsOpen(false);
+                closeSettings();
                 focus("knob");
             } else if (openId !== null) {
                 const id = openId;
-                setOpenId(null);
+                toggleOpen(id);
                 focus(`tx-${id}`);
             } else if (view === "day") backToCalendar();
             else if (view === "calendar") backToWeek();
@@ -669,11 +792,18 @@ export function Week(props: actions.Week) {
                 aria-label={settingsOpen ? "Fechar ajustes" : "Ajustes"}
                 aria-expanded={settingsOpen}
                 aria-controls="settings"
-                onClick={() => setSettingsOpen(!settingsOpen)}
+                onClick={() => setSettings(settingsOpen ? "closing" : "open")}
             />
-            {settingsOpen && (
-                <section className="settings" id="settings" role="dialog" aria-label="Ajustes">
-                    <h2 className="ruler">AJUSTES</h2>
+            {settings !== "closed" && (
+                <section
+                    ref={settingsRef}
+                    className={cx("settings", settings === "closing" && "closing")}
+                    id="settings"
+                    role="dialog"
+                    aria-label="Ajustes"
+                    inert={settings === "closing"}
+                >
+                    <h2 className="ruler">Ajustes</h2>
                     <p className="settings-label" id="font-label">
                         Tamanho do texto
                     </p>
@@ -715,6 +845,15 @@ export function Week(props: actions.Week) {
                         Tema
                     </p>
                     <div className="segmented" role="radiogroup" aria-labelledby="theme-label">
+                        <span
+                            className="seg-thumb"
+                            aria-hidden="true"
+                            style={
+                                {
+                                    "--i": THEMES.findIndex((t) => t.value === themeChoice),
+                                } as CSSProperties
+                            }
+                        />
                         {THEMES.map(({ value, label }) => (
                             <button
                                 key={value}
@@ -784,6 +923,7 @@ export function Week(props: actions.Week) {
         const done = isDone(task, iso);
         const late = isLate(task, iso, today, clock);
         const open = openId === task.id;
+        const closing = closingId === task.id;
         const label =
             task.text +
             (task.time ? `, às ${task.time}` : "") +
@@ -794,7 +934,7 @@ export function Week(props: actions.Week) {
         const pos = movable.findIndex((t) => t.id === task.id);
         // deslizar: direita conclui (ou reabre), esquerda remove (com o desfazer). Equivale à caixa
         // e ao Remover da tarefa aberta.
-        const canSwipe = !open && task.id > 0;
+        const canSwipe = !open && !closing && task.id > 0;
         const swipe = canSwipe && {
             onPointerDown: swipeDown,
             onClickCapture: swipeClick,
@@ -812,14 +952,19 @@ export function Week(props: actions.Week) {
         return (
             <div
                 key={task.id}
-                className={cx("task", done && "done", open && "open", task.id < 0 && "temp")}
+                className={cx(
+                    "task",
+                    done && "done",
+                    (open || closing) && "open",
+                    task.id < 0 && "temp",
+                )}
                 id={`task-${task.id}`}
                 {...swipe}
             >
                 {canSwipe && (
                     <span className="swipe-under" aria-hidden="true">
-                        <span className="swipe-done">{done ? "REABRIR" : "FEITA"}</span>
-                        <span className="swipe-remove">REMOVER</span>
+                        <span className="swipe-done">{done ? "Reabrir" : "Feita"}</span>
+                        <span className="swipe-remove">Remover</span>
                     </span>
                 )}
                 <div className="task-row">
@@ -846,8 +991,7 @@ export function Week(props: actions.Week) {
                         aria-expanded={open}
                         aria-controls={`panel-${task.id}`}
                         onClick={() => {
-                            if (task.id < 0) return;
-                            setOpenId(open ? null : task.id);
+                            if (task.id > 0) toggleOpen(task.id);
                         }}
                     >
                         {task.text}
@@ -868,8 +1012,8 @@ export function Week(props: actions.Week) {
                         </span>
                     )}
                 </div>
-                {open && (
-                    <div className="task-panel" id={`panel-${task.id}`}>
+                {(open || closing) && (
+                    <div className="task-panel" id={`panel-${task.id}`} inert={closing}>
                         <div>
                             {task.note && <p className="task-note">{task.note}</p>}
                             <div className="task-actions">
@@ -961,18 +1105,23 @@ export function Week(props: actions.Week) {
         const list: Task[] = past ? historyFor(pastTasks, iso) : tasksFor(tasks, iso);
         const done = list.filter((t) => isDone(t, iso)).length;
         return (
-            <section className="card" aria-labelledby="dh">
+            <section className="card day" aria-labelledby="dh" ref={cardRef}>
+                <span className="card-top" aria-hidden="true" />
+                <span className="card-body" aria-hidden="true" />
+                <span className="card-foot" aria-hidden="true" />
                 <div className="card-head">
                     <Flaps value={pad2(Number(iso.slice(8)))} label={fullDate(iso)} />
                     <div className="card-title">
-                        <h2 id="dh" tabIndex={-1}>
+                        <h2 id="dh" tabIndex={-1} className="swap" key={`h-${iso}`}>
                             {DAY_NAMES[weekday(iso)]}
                         </h2>
-                        <p id="date-line">{dialLine(iso, idx, clock)}</p>
+                        <p id="date-line" className="swap" key={`p-${iso}`}>
+                            {dialLine(iso, idx, clock)}
+                        </p>
                     </div>
                 </div>
                 <div className="ruler">
-                    TAREFAS
+                    Tarefas
                     <span className="count">
                         <span aria-hidden="true">
                             {done}/{list.length}
@@ -982,7 +1131,7 @@ export function Week(props: actions.Week) {
                         </span>
                     </span>
                 </div>
-                {past && <p className="past-tag">DIA PASSADO: SÓ CONSULTA</p>}
+                {past && <p className="past-tag">Dia passado: só consulta</p>}
                 {list.length === 0 && (!past || historyReady) && (
                     <p className="empty">Nada por aqui.</p>
                 )}
@@ -1079,7 +1228,8 @@ export function Week(props: actions.Week) {
                                 id={`dd-${i}`}
                                 aria-pressed={i === selIdx}
                                 aria-label={`${DAY_FULL[dow]} ${d}${has ? ", com tarefas" : ""}`}
-                                onClick={() => pickDay(i)}
+                                data-idx={i}
+                                onClick={onDialDay}
                             >
                                 <span className="dial-dow">{DAY_ABBR[dow]}</span>
                                 <span className="dial-num">{d}</span>
@@ -1117,7 +1267,7 @@ export function Week(props: actions.Week) {
                             <Flaps value={pad2(cal.m + 1)} label={`Mês ${cal.m + 1}`} small />
                             <div className="card-title">
                                 <h2 id="cal-title" tabIndex={-1} aria-live="polite">
-                                    {month.toUpperCase()}
+                                    {month[0]!.toUpperCase() + month.slice(1)}
                                 </h2>
                                 <p>
                                     {cal.y} · {count === 1 ? "1 pendente" : `${count} pendentes`}
@@ -1125,7 +1275,7 @@ export function Week(props: actions.Week) {
                             </div>
                         </div>
                         <div className="ruler" aria-hidden="true">
-                            DIAS
+                            Dias
                         </div>
                         <div className="cal-week">
                             {DAY_SHORT.map((s, w) => (
@@ -1198,7 +1348,7 @@ export function Week(props: actions.Week) {
                         <ChevronLeft />
                     </button>
                     <p className="dock-month" aria-hidden="true">
-                        {month.slice(0, 3).toUpperCase()} {cal.y}
+                        {month[0]!.toUpperCase() + month.slice(1, 3)} {cal.y}
                     </p>
                     <button
                         type="button"
@@ -1281,10 +1431,10 @@ export function Week(props: actions.Week) {
             ),
         ].filter(Boolean);
         return (
-            <form className="sheet-form" onSubmit={submitSheet}>
+            <form className="sheet-form" onSubmit={submitSheet} inert={sheetLeaving}>
                 <span className="grip" aria-hidden="true" />
                 <h2 className="ruler" id="sheet-title">
-                    {sheet.mode === "new" ? "NOVA TAREFA" : "EDITAR TAREFA"}
+                    {sheet.mode === "new" ? "Nova tarefa" : "Editar tarefa"}
                 </h2>
                 <label className="sr" htmlFor="sheet-text">
                     Texto da tarefa
@@ -1314,8 +1464,8 @@ export function Week(props: actions.Week) {
                         />
                     </>
                 )}
-                <div className="ruler thin" id="tp-h-label">
-                    HORA
+                <div className="ruler" id="tp-h-label">
+                    Hora
                     {time && (
                         <span className="time-chip" aria-live="polite">
                             <span className="sr">Horário: </span>
@@ -1365,8 +1515,8 @@ export function Week(props: actions.Week) {
                         </button>
                     ))}
                 </div>
-                <div className="ruler thin" id="rep-label">
-                    REPETIR
+                <div className="ruler" id="rep-label">
+                    Repetir
                     <span className="sr">(nenhum dia = só neste dia)</span>
                 </div>
                 <div className="grid-keys seven" role="group" aria-labelledby="rep-label">
@@ -1424,7 +1574,7 @@ export function Week(props: actions.Week) {
             </div>
             <dialog
                 ref={sheetRef}
-                className="sheet"
+                className={cx("sheet", sheetLeaving && "leaving")}
                 aria-labelledby="sheet-title"
                 onCancel={(e) => {
                     e.preventDefault();
