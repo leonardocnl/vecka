@@ -59,18 +59,18 @@ grão claro e opacidade 0,35 (ver `RadioIII.dc.html` e `V3Noturno.dc.html`). Sem
 
 ## Relevo (as únicas sombras permitidas)
 
-| Nome           | Onde                                      | Receita (`box-shadow`)                                                                     |
-| -------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `elev-plate`   | placas marfim                             | `inset 0 1px 0 #FFF, 0 0 0 1px plate-ring, 0 4px 12px rgba(40,30,10,.10)`                  |
-| `elev-panel`   | painéis grafite (dial)                    | `inset 0 1px 0 #3C3C39, 0 0 0 1px panel-ring, 0 4px 12px rgba(0,0,0,.22)`                  |
-| `elev-dock`    | barra inferior flutuante                  | `inset 0 1px 0 #3C3C39, 0 0 0 1px panel-ring, 0 8px 20px rgba(0,0,0,.28)`                  |
-| `key-light`    | tecla clara sobre placa/papel             | `0 0 0 1px rgba(30,30,30,.10), 0 1px 2px rgba(40,30,10,.10)`                               |
-| `key-dark`     | tecla escura, botão giratório, placa flap | `inset 0 1px 0 rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.40)`                           |
-| `key-accent`   | tecla verde                               | `inset 0 1px 0 rgba(255,255,255,.45), 0 1px 2px rgba(0,0,0,.40)`                           |
-| `pressed`      | tarefa feita, opção escolhida, tecla ativa | `inset 0 1px 2px rgba(0,0,0,.28)` — **aprovado pelo Leonardo, é a referência**             |
-| `sunken`       | campos                                    | claro: `inset 0 1px 2px rgba(40,30,10,.18), 0 0 0 1px plate-ring`; escuro: `inset 0 1px 3px rgba(0,0,0,.45)` |
-| `sheet`        | folha que sobe de baixo                   | `inset 0 1px 0 #FFF, 0 -6px 24px rgba(30,20,5,.25)`                                        |
-| `popover`      | painel de ajustes                         | `inset 0 1px 0 #FFF, 0 0 0 1px plate-ring, 0 12px 30px rgba(40,30,10,.22)`                 |
+| Nome         | Onde                                       | Receita (`box-shadow`)                                                                                       |
+| ------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `elev-plate` | placas marfim                              | `inset 0 1px 0 #FFF, 0 0 0 1px plate-ring, 0 4px 12px rgba(40,30,10,.10)`                                    |
+| `elev-panel` | painéis grafite (dial)                     | `inset 0 1px 0 #3C3C39, 0 0 0 1px panel-ring, 0 4px 12px rgba(0,0,0,.22)`                                    |
+| `elev-dock`  | barra inferior flutuante                   | `inset 0 1px 0 #3C3C39, 0 0 0 1px panel-ring, 0 8px 20px rgba(0,0,0,.28)`                                    |
+| `key-light`  | tecla clara sobre placa/papel              | `0 0 0 1px rgba(30,30,30,.10), 0 1px 2px rgba(40,30,10,.10)`                                                 |
+| `key-dark`   | tecla escura, botão giratório, placa flap  | `inset 0 1px 0 rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.40)`                                             |
+| `key-accent` | tecla verde                                | `inset 0 1px 0 rgba(255,255,255,.45), 0 1px 2px rgba(0,0,0,.40)`                                             |
+| `pressed`    | tarefa feita, opção escolhida, tecla ativa | `inset 0 1px 2px rgba(0,0,0,.28)` — **aprovado pelo Leonardo, é a referência**                               |
+| `sunken`     | campos                                     | claro: `inset 0 1px 2px rgba(40,30,10,.18), 0 0 0 1px plate-ring`; escuro: `inset 0 1px 3px rgba(0,0,0,.45)` |
+| `sheet`      | folha que sobe de baixo                    | `inset 0 1px 0 #FFF, 0 -6px 24px rgba(30,20,5,.25)`                                                          |
+| `popover`    | painel de ajustes                          | `inset 0 1px 0 #FFF, 0 0 0 1px plate-ring, 0 12px 30px rgba(40,30,10,.22)`                                   |
 
 Regra: **tecla sobe, campo desce, escolhido afunda.** Nada de sombra fora desta tabela.
 
@@ -86,15 +86,15 @@ Regra: **tecla sobe, campo desce, escolhido afunda.** Nada de sombra fora desta 
 
 ## Telas (mockups em `docs/design/mockups/`)
 
-| Mockup                | Tela                                                                 |
-| --------------------- | -------------------------------------------------------------------- |
-| `RadioIII.dc.html`    | dia (lista) — **interativo**: tocar no dial move ponteiro e placas   |
-| `V3Painel.dc.html`    | tarefa aberta: nota + Editar, ↑ ↓, Remover                           |
-| `V3Edicao.dc.html`    | editar tarefa (folha de baixo): texto, nota, hora, minutos, repetir  |
-| `V3Calendario.dc.html`| calendário do mês                                                    |
-| `V3Ajustes.dc.html`   | ajustes abertos pelo botão giratório                                 |
-| `V3Login.dc.html`     | entrar                                                               |
-| `V3Noturno.dc.html`   | tema escuro (dia)                                                    |
+| Mockup                 | Tela                                                                |
+| ---------------------- | ------------------------------------------------------------------- |
+| `RadioIII.dc.html`     | dia (lista) — **interativo**: tocar no dial move ponteiro e placas  |
+| `V3Painel.dc.html`     | tarefa aberta: nota + Editar, ↑ ↓, Remover                          |
+| `V3Edicao.dc.html`     | editar tarefa (folha de baixo): texto, nota, hora, minutos, repetir |
+| `V3Calendario.dc.html` | calendário do mês                                                   |
+| `V3Ajustes.dc.html`    | ajustes abertos pelo botão giratório                                |
+| `V3Login.dc.html`      | entrar                                                              |
+| `V3Noturno.dc.html`    | tema escuro (dia)                                                   |
 
 ### O que muda no comportamento
 
