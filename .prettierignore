@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+build
+coverage
+package-lock.json
+next-env.d.ts
+
+# migrations geradas pelo drizzle-kit
+drizzle/
+
+# versão anterior: guardada exatamente como estava (referência)
+legacy/

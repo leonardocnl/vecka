@@ -7,18 +7,18 @@ Decisões visuais já aprovadas pelo Leonardo. Não mudar sem perguntar. A vers�
 
 Uma cor de destaque só, sem variações de tom.
 
-| Token          | Claro      | Escuro     | Uso                                                       |
-| -------------- | ---------- | ---------- | --------------------------------------------------------- |
-| `paper`        | `#E3E2DE`  | `#2F2F2F`  | fundo (com textura de papel, `public/paper.png`)          |
-| `ink`          | `#1E1E1E`  | `#E4E3DF`  | texto principal, bordas de caixas e botões                |
-| `ink-open`     | `#1E1E1E`  | `#F0EFEB`  | nome do dia aberto                                        |
-| `muted`        | `#4F4E4B`  | `#B3B2AE`  | texto secundário (data, dicas, ícones, contadores)        |
-| `day-closed`   | `#5C5B58`  | `#A9A8A4`  | nome dos dias recolhidos e placeholder                    |
-| `done-text`    | `#575653`  | `#A3A29E`  | texto da tarefa concluída                                 |
-| `line`         | `#A8A7A3`  | `#555555`  | linhas entre os dias                                      |
-| `signal`       | `#CF1020`  | `#CF1020`  | ✕ da tarefa feita, risco, ponto do calendário, foco, atraso |
+| Token        | Claro     | Escuro    | Uso                                                         |
+| ------------ | --------- | --------- | ----------------------------------------------------------- |
+| `paper`      | `#E3E2DE` | `#2F2F2F` | fundo (com textura de papel, `public/paper.png`)            |
+| `ink`        | `#1E1E1E` | `#E4E3DF` | texto principal, bordas de caixas e botões                  |
+| `ink-open`   | `#1E1E1E` | `#F0EFEB` | nome do dia aberto                                          |
+| `muted`      | `#4F4E4B` | `#B3B2AE` | texto secundário (data, dicas, ícones, contadores)          |
+| `day-closed` | `#5C5B58` | `#A9A8A4` | nome dos dias recolhidos e placeholder                      |
+| `done-text`  | `#575653` | `#A3A29E` | texto da tarefa concluída                                   |
+| `line`       | `#A8A7A3` | `#555555` | linhas entre os dias                                        |
+| `signal`     | `#CF1020` | `#CF1020` | ✕ da tarefa feita, risco, ponto do calendário, foco, atraso |
 
-- **O vermelho é sempre `#CF1020`, nos dois temas.** Onde ele é *texto* (horário atrasado,
+- **O vermelho é sempre `#CF1020`, nos dois temas.** Onde ele é _texto_ (horário atrasado,
   aviso de erro), vira **fundo de etiqueta com texto branco** (contraste 5,6:1).
 - No tema escuro, o foco ganha um anel claro (`#E4E3DF`) em volta do contorno vermelho.
 - Todo texto tem contraste ≥ 4,5:1 (WCAG AA); conferir ao criar qualquer cor nova.

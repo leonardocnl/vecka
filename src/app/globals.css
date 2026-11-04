@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+/*
+ * Tokens do Vecka, exatamente como em docs/design.md. Única fonte de valores visuais: componentes
+ * e telas só usam as classes geradas daqui. Os padrões do Tailwind que concorrem com os tokens são
+ * apagados (initial).
+ */
+@theme {
+    /* cores (tema claro; o escuro reescreve as mesmas variáveis abaixo) */
+    --color-*: initial;
+    --color-paper: #e3e2de; /* fundo, com a textura de papel */
+    --color-ink: #1e1e1e; /* texto principal, bordas de caixas e botões */
+    --color-ink-open: #1e1e1e; /* nome do dia aberto */
+    --color-muted: #4f4e4b; /* texto secundário */
+    --color-day-closed: #5c5b58; /* nome dos dias recolhidos e placeholder */
+    --color-done-text: #575653; /* texto da tarefa concluída */
+    --color-line: #a8a7a3; /* linhas entre os dias */
+    --color-signal: #cf1020; /* o único vermelho, igual nos dois temas */
+    --color-white: #ffffff; /* texto sobre a etiqueta vermelha */
+
+    /* fontes (as variáveis vêm do next/font, em layout.tsx) */
+    --font-*: initial;
+    --font-title: var(--font-space-mono); /* Space Mono Bold: nomes dos dias, mês, horários */
+    --font-sans: var(--font-ibm-plex-sans); /* todo o resto */
+
+    /* espaçamento: escala de 8 em 8, nenhum valor solto */
+    --spacing-*: initial;
+    --spacing-8: 0.5rem;
+    --spacing-16: 1rem;
+    --spacing-24: 1.5rem;
+    --spacing-32: 2rem;
+    --spacing-48: 3rem;
+    --spacing-gutter: 1.5rem; /* margem lateral única; 16px até 480px (abaixo) */
+    --spacing-target: 3rem; /* alvo mínimo de toque */
+    --spacing-wordmark: 8.25rem; /* 132px; 105px no celular */
+    --spacing-wordmark-phone: 6.5625rem;
+
+    --aspect-wordmark: 3; /* 132×44 */
+    --container-page: 45rem; /* coluna de 720px, como na versão atual */
+
+    --breakpoint-*: initial;
+    --breakpoint-phone: 30rem; /* 480px */
+}
+
+@layer base {
+    @media (prefers-color-scheme: dark) {
+        :root:not(.light) {
+            --color-paper: #2f2f2f;
+            --color-ink: #e4e3df;
+            --color-ink-open: #f0efeb;
+            --color-muted: #b3b2ae;
+            --color-day-closed: #a9a8a4;
+            --color-done-text: #a3a29e;
+            --color-line: #555555;
+        }
+    }
+    :root.dark {
+        --color-paper: #2f2f2f;
+        --color-ink: #e4e3df;
+        --color-ink-open: #f0efeb;
+        --color-muted: #b3b2ae;
+        --color-day-closed: #a9a8a4;
+        --color-done-text: #a3a29e;
+        --color-line: #555555;
+    }
+
+    html {
+        /* impede o navegador de "corrigir" a rolagem sozinho quando um dia abre */
+        overflow-anchor: none;
+    }
+    body {
+        background-color: var(--color-paper);
+        background-image: url("/paper.png");
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+    }
+    @media (max-width: 30rem) {
+        :root {
+            --spacing-gutter: 1rem;
+        }
+    }
+
+    /* foco só no teclado; no escuro, um anel claro em volta do contorno vermelho */
+    :focus-visible {
+        outline: 3px solid var(--color-signal);
+        outline-offset: 2px;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root:not(.light) :focus-visible {
+            box-shadow: 0 0 0 7px var(--color-ink);
+        }
+    }
+    :root.dark :focus-visible {
+        box-shadow: 0 0 0 7px var(--color-ink);
+    }
+}
+
+/* a wordmark é um SVG preto usado como máscara: assim ela segue a cor ink dos dois temas */
+@utility wordmark {
+    background-color: var(--color-ink);
+    mask: url("/wordmark.svg") center / contain no-repeat;
+}

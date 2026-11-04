@@ -5,18 +5,18 @@ A versão atual (`index.html` em ES5, modo demonstração) é a referência de c
 
 ## Decisões do Leonardo
 
-| Tema            | Decisão                                                                                   |
-| --------------- | ----------------------------------------------------------------------------------------- |
-| Público         | Começa só com ele; pode virar portfólio aberto a qualquer pessoa depois                   |
-| Login           | **Google**, implementado à mão (OAuth 2.0 + PKCE) com sessões no banco, como no Kinne     |
-| Histórico       | **Guardar tudo**; dias passados abrem no calendário **só para consulta**                   |
-| Stack           | A mesma do Kinne (abaixo)                                                                 |
-| Hospedagem      | Vercel, projeto `vecka` → `vecka.vercel.app`                                              |
-| Recursos novos  | **Animações sutis**, **gestos de deslizar**, **lembrete no horário** (notificação)        |
-| Fora do escopo  | Offline                                                                                   |
-| Kindle          | Depois, numa rota leve separada (`/kindle`, HTML do servidor, sem JS moderno)             |
-| Repositório     | Este mesmo (`leonardocnl/vecka`), com o fluxo do Kinne: `main` / `develop` / branches + PR |
-| Autoria         | Commits e PRs **só em nome do Leonardo**, sem `Co-Authored-By` nem menção ao Claude        |
+| Tema           | Decisão                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| Público        | Começa só com ele; pode virar portfólio aberto a qualquer pessoa depois                    |
+| Login          | **Google**, implementado à mão (OAuth 2.0 + PKCE) com sessões no banco, como no Kinne      |
+| Histórico      | **Guardar tudo**; dias passados abrem no calendário **só para consulta**                   |
+| Stack          | A mesma do Kinne (abaixo)                                                                  |
+| Hospedagem     | Vercel, projeto `vecka` → `vecka.vercel.app`                                               |
+| Recursos novos | **Animações sutis**, **gestos de deslizar**, **lembrete no horário** (notificação)         |
+| Fora do escopo | Offline                                                                                    |
+| Kindle         | Depois, numa rota leve separada (`/kindle`, HTML do servidor, sem JS moderno)              |
+| Repositório    | Este mesmo (`leonardocnl/vecka`), com o fluxo do Kinne: `main` / `develop` / branches + PR |
+| Autoria        | Commits e PRs **só em nome do Leonardo**, sem `Co-Authored-By` nem menção ao Claude        |
 
 ## Stack (igual ao Kinne)
 
