@@ -18,7 +18,7 @@ Uma cor de destaque só, sem variações de tom.
 | `line`       | `#A8A7A3` | `#555555` | linhas entre os dias                                        |
 | `signal`     | `#CF1020` | `#CF1020` | ✕ da tarefa feita, risco, ponto do calendário, foco, atraso |
 | `field`      | `#8E8D89` | `#7A7976` | linha dos campos de texto e borda da nota (do legacy)       |
-| `disabled`   | `#8E8D89` | `#77766F` | dia passado no calendário (desabilitado, do legacy)         |
+| `disabled`   | `#8E8D89` | `#77766F` | dia anterior à conta no calendário (desabilitado)           |
 
 - **O vermelho é sempre `#CF1020`, nos dois temas.** Onde ele é _texto_ (horário atrasado,
   aviso de erro), vira **fundo de etiqueta com texto branco** (contraste 5,6:1).
@@ -60,7 +60,12 @@ Uma cor de destaque só, sem variações de tom.
   00/15/30/45, link "mais minutos (de 5 em 5)". "Horário: **14:30** limpar".
 - **Calendário:** grade do mês começando no domingo, **sempre 6 semanas**, centralizada na
   altura livre. Barra "‹ NOVEMBRO 2026 ›" **presa ao fundo** (32px + área segura do iPhone),
-  sem se mexer ao trocar de mês. Hoje com borda grossa; ponto vermelho = tarefa avulsa pendente.
+  sem se mexer ao trocar de mês. Hoje com borda grossa; ponto vermelho = tarefa avulsa pendente;
+  ponto cinza (`muted`) = dia passado com histórico. "‹" volta até o mês em que a conta foi criada.
+- **Dia passado (só consulta):** mesmo visual do dia distante, data "— ontem" / "— há 5 dias",
+  aviso discreto "Dia passado: só consulta" no topo. Tarefas com ✕ nas feitas, nota em cinza
+  abaixo; sem adicionar, marcar, editar, "…" nem gestos. Leitor de tela: "feita"/"não feita",
+  sem papel de checkbox.
 - **Links de navegação:** só texto ("voltar", "calendário"), sem setas.
 
 ## Acessibilidade (obrigatório)

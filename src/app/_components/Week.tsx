@@ -11,10 +11,13 @@ import {
     DAY_SHORT,
     daysBetween,
     daysText,
+    hasHistoryOn,
     hasPendingOn,
+    historyFor,
     isDone,
     isLate,
     monthGrid,
+    monthRange,
     MONTHS,
     movableFor,
     NOTE_MAX,
@@ -27,6 +30,7 @@ import {
     todayIn,
     toggleIn,
     weekday,
+    type HistoryTask,
     type Task,
 } from "@/domain/tasks";
 import * as actions from "@/app/_actions/tasks";
@@ -103,6 +107,10 @@ export function Week(props: actions.Week) {
     const [actionsId, setActionsId] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [pending, setPending] = useState<PendingDelete | null>(null);
+    // dia em que a conta foi criada: antes dele não há histórico
+    const [since, setSince] = useState(props.since);
+    // histórico do mês visível no calendário (só dias passados, só leitura)
+    const [history, setHistory] = useState<{ key: string; tasks: HistoryTask[] } | null>(null);
     const fontStep = useFontStep();
     const dark = useDark();
 
@@ -163,6 +171,7 @@ export function Week(props: actions.Week) {
                 return week.today;
             });
             setTimeZone(week.timeZone);
+            setSince(week.since);
             setClock(clockIn(week.timeZone, new Date()));
             // uma remoção esperando o "desfazer" não deve reaparecer
             const hidden = pendingRef.current?.task.id;
@@ -267,8 +276,8 @@ export function Week(props: actions.Week) {
 
     const pickDate = (iso: string) => {
         const idx = daysBetween(today, iso);
-        if (idx < 0) return;
-        if (idx <= 6) {
+        if (iso < since) return;
+        if (idx >= 0 && idx <= 6) {
             setOpenIdx(idx);
             setListOpenIdx(idx);
             showView("list");
@@ -300,6 +309,37 @@ export function Week(props: actions.Week) {
         openCalendar(y, m - 1);
         focus(`cd-${iso}`);
     };
+
+    // o intervalo de histórico do mês visível: do começo do mês (ou da conta) até ontem
+    const historyRange = (() => {
+        const { from, to } = monthRange(cal.y, cal.m);
+        const range = {
+            from: from < since ? since : from,
+            to: to < today ? to : addDays(today, -1),
+        };
+        return range.from <= range.to ? range : null;
+    })();
+    const historyKey = historyRange ? `${historyRange.from}/${historyRange.to}` : null;
+    const historyReady = history !== null && history.key === historyKey;
+    const pastTasks = historyReady ? history.tasks : [];
+
+    useEffect(() => {
+        if (view === "list" || !historyKey || history?.key === historyKey) return;
+        const [from, to] = historyKey.split("/");
+        let stale = false;
+        void actions
+            .loadHistory({ from, to })
+            .catch(() => ({ ok: false }) as const)
+            .then((result) => {
+                if (stale) return;
+                if (!result.ok && "signedOut" in result) router.push("/entrar");
+                else if (!result.ok) setError(LOAD_ERROR);
+                else setHistory({ key: historyKey, tasks: result.value });
+            });
+        return () => {
+            stale = true;
+        };
+    }, [view, historyKey, history?.key, router]);
 
     // ---------- ações das tarefas ----------
 
@@ -813,7 +853,60 @@ export function Week(props: actions.Week) {
         );
     };
 
+    // dia passado: só consulta. Sem botões, sem "…", sem gestos; feita/não feita em texto.
+    const renderPastTask = (task: HistoryTask, iso: string) => {
+        const done = isDone(task, iso);
+        const repeat = task.recurringDays ? `Repete ${daysText(task.recurringDays)}` : null;
+        return (
+            <div key={task.id}>
+                <div className={cx("task", done && "done")} id={`task-${task.id}`}>
+                    <div className="task-cell">
+                        <p className="task-main past">
+                            <span className="box" aria-hidden="true" />
+                            <span className="label">{task.text}</span>
+                            <span className="sr">, {done ? "feita" : "não feita"}</span>
+                            {task.time && <span className="sr">, às {task.time}</span>}
+                            {repeat && (
+                                <>
+                                    <span className="rec" aria-hidden="true" title={repeat}>
+                                        ↻
+                                    </span>
+                                    <span className="sr">, {repeat.toLowerCase()}</span>
+                                </>
+                            )}
+                        </p>
+                    </div>
+                    {task.time && (
+                        <div className="task-time" aria-hidden="true">
+                            <span>{task.time}</span>
+                        </div>
+                    )}
+                </div>
+                {task.note && <p className="task-note past-note">{task.note}</p>}
+            </div>
+        );
+    };
+
+    const renderPastDay = (idx: number) => {
+        const iso = dayIso(idx);
+        const list = historyFor(pastTasks, iso);
+        return (
+            <section className="day open" id={`day-${idx}`} aria-labelledby={`dh-${idx}`} key={idx}>
+                <p className="hint past-notice">Dia passado: só consulta</p>
+                <h2 className="day-head" id={`dh-${idx}`} tabIndex={-1}>
+                    {DAY_NAMES[weekday(iso)]}
+                </h2>
+                <div className="date" id="date-line">
+                    {dateLine(iso, idx, clock)}
+                </div>
+                {historyReady && list.length === 0 && <p className="empty">Nada por aqui.</p>}
+                {list.map((t) => renderPastTask(t, iso))}
+            </section>
+        );
+    };
+
     const renderDay = (idx: number) => {
+        if (idx < 0) return renderPastDay(idx);
         const iso = dayIso(idx);
         const dow = weekday(iso);
         const name = DAY_NAMES[dow];
@@ -913,8 +1006,9 @@ export function Week(props: actions.Week) {
     };
 
     const renderCalendar = () => {
-        const [ty, tm] = today.split("-").map(Number) as [number, number];
-        const atCurrent = cal.y === ty && cal.m === tm - 1;
+        const [sy, sm] = since.split("-").map(Number) as [number, number];
+        // "‹" vai até o mês em que a conta foi criada
+        const atFirst = cal.y * 12 + cal.m <= sy * 12 + sm - 1;
         return (
             <>
                 <div className="back-nav">
@@ -948,13 +1042,17 @@ export function Week(props: actions.Week) {
                                                 );
                                             }
                                             const past = iso < today;
+                                            const blocked = iso < since;
                                             const isToday = iso === today;
                                             const dot = !past && hasPendingOn(tasks, iso);
+                                            const trace =
+                                                past && !blocked && hasHistoryOn(pastTasks, iso);
                                             const day = Number(iso.slice(8));
                                             const label =
                                                 `${day} de ${MONTHS[cal.m]}, ${DAY_FULL[d]}` +
                                                 (isToday ? ", hoje" : "") +
-                                                (dot ? ", com tarefas" : "");
+                                                (dot ? ", com tarefas" : "") +
+                                                (trace ? ", com histórico" : "");
                                             return (
                                                 <td key={d}>
                                                     <button
@@ -965,13 +1063,16 @@ export function Week(props: actions.Week) {
                                                         )}
                                                         id={`cd-${iso}`}
                                                         aria-label={label}
-                                                        disabled={past}
+                                                        disabled={blocked}
                                                         onClick={() => pickDate(iso)}
                                                     >
                                                         {day}
-                                                        {dot && (
+                                                        {(dot || trace) && (
                                                             <span
-                                                                className="dot"
+                                                                className={cx(
+                                                                    "dot",
+                                                                    trace && "past",
+                                                                )}
                                                                 aria-hidden="true"
                                                             />
                                                         )}
@@ -993,7 +1094,7 @@ export function Week(props: actions.Week) {
                                 className="cal-arrow"
                                 id="cal-prev"
                                 aria-label="Mês anterior"
-                                disabled={atCurrent}
+                                disabled={atFirst}
                                 onClick={() => changeMonth(-1)}
                             >
                                 ‹

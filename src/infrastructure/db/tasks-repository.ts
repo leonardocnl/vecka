@@ -1,6 +1,6 @@
 import "server-only";
 import type { TaskInput, TasksRepository } from "@/application/tasks";
-import type { Task } from "@/domain/tasks";
+import type { HistoryTask, Task } from "@/domain/tasks";
 import type { Executor } from "./auth-repository";
 import * as q from "./tasks-sql";
 
@@ -32,6 +32,16 @@ export class DrizzleTasksRepository implements TasksRepository {
 
     async list(userId: number, today: string) {
         return (await this.rows<Row>(q.listTasks(userId, today))).map(toTask);
+    }
+
+    async history(userId: number, from: string, to: string): Promise<HistoryTask[]> {
+        const rows = await this.rows<Row & { createdOn: string }>(q.listHistory(userId, from, to));
+        return rows.map((row) => ({ ...toTask(row), createdOn: row.createdOn }));
+    }
+
+    async since(userId: number): Promise<string | null> {
+        const [row] = await this.rows<{ since: string }>(q.accountSince(userId));
+        return row?.since ?? null;
     }
 
     async get(userId: number, id: number) {

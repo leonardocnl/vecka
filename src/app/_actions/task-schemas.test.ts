@@ -49,4 +49,22 @@ describe("schemas das ações de tarefas", () => {
         expect(ok("move", { id: 1, date: "2026-11-03", dir: -1 })).toBe(true);
         expect(ok("move", { id: 1, date: "2026-11-03", dir: 2 })).toBe(false);
     });
+
+    it("histórico: mês visível, até 42 dias", () => {
+        expect(ok("history", { from: "2026-11-01", to: "2026-11-30" })).toBe(true);
+        expect(ok("history", { from: "2026-11-01", to: "2026-11-01" })).toBe(true);
+        expect(ok("history", { from: "2026-10-01", to: "2026-11-11" })).toBe(true); // 42 dias
+    });
+
+    it.each([
+        ["intervalo de 43 dias", { from: "2026-10-01", to: "2026-11-12" }],
+        ["fim antes do começo", { from: "2026-11-30", to: "2026-11-01" }],
+        ["data inexistente", { from: "2026-02-29", to: "2026-03-01" }],
+        ["outro formato", { from: "01/11/2026", to: "2026-11-30" }],
+        ["chave desconhecida", { from: "2026-11-01", to: "2026-11-30", userId: 2 }],
+        ["sem campo", { from: "2026-11-01" }],
+        ["não é objeto", "2026-11"],
+    ])("histórico recusa %s", (_, input) => {
+        expect(ok("history", input)).toBe(false);
+    });
 });

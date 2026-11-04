@@ -3,7 +3,7 @@
 import "server-only";
 import type { z } from "zod";
 import * as uc from "@/application/tasks";
-import { todayIn, type Task } from "@/domain/tasks";
+import { todayIn, type HistoryTask, type Task } from "@/domain/tasks";
 import { MemoryLimiter } from "@/infrastructure/memory-limiter";
 import { createDb } from "@/infrastructure/db/client";
 import { DrizzleTasksRepository } from "@/infrastructure/db/tasks-repository";
@@ -51,7 +51,7 @@ async function run<S extends z.ZodType, T>(
     }
 }
 
-export type Week = { today: string; timeZone: string; tasks: Task[] };
+export type Week = { today: string; timeZone: string; tasks: Task[]; since: string };
 
 /** Recarrega a lista (ao voltar ao app e depois de um erro). Sem entrada. */
 export async function loadWeek(): Promise<Result<Week>> {
@@ -60,10 +60,30 @@ export async function loadWeek(): Promise<Result<Week>> {
         // sessão vencida ou encerrada em outro aparelho: a tela volta para /entrar
         if (!user) return { ok: false, signedOut: true };
         const today = todayIn(user.timeZone, new Date());
-        const tasks = await new DrizzleTasksRepository(createDb()).list(user.id, today);
-        return { ok: true, value: { today, timeZone: user.timeZone, tasks } };
+        const repo = new DrizzleTasksRepository(createDb());
+        const [tasks, since] = await Promise.all([repo.list(user.id, today), repo.since(user.id)]);
+        return {
+            ok: true,
+            value: { today, timeZone: user.timeZone, tasks, since: since ?? today },
+        };
     } catch (error) {
         console.error("tarefas: falha ao ler", (error as Error).name);
+        return fail;
+    }
+}
+
+/** Histórico de um intervalo (o mês visível), só leitura e só do usuário da sessão. */
+export async function loadHistory(input: unknown): Promise<Result<HistoryTask[]>> {
+    const parsed = schemas.history.safeParse(input);
+    if (!parsed.success) return fail;
+    try {
+        const user = await currentUser();
+        if (!user) return { ok: false, signedOut: true };
+        const { from, to } = parsed.data;
+        const repo = new DrizzleTasksRepository(createDb());
+        return { ok: true, value: await repo.history(user.id, from, to) };
+    } catch (error) {
+        console.error("tarefas: falha ao ler o histórico", (error as Error).name);
         return fail;
     }
 }

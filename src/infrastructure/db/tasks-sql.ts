@@ -76,3 +76,28 @@ export const markUndone = (userId: number, id: number, date: string) => sql`
     delete from task_completions c using tasks t
     where c.task_id = t.id and t.id = ${id} and t.user_id = ${userId} and t.deleted_at is null
         and c.date = ${date}::date`;
+
+/**
+ * Histórico de um intervalo (o mês visível): avulsas daquelas datas e recorrentes criadas até o
+ * fim dele, com as conclusões do intervalo e o dia de criação no fuso do usuário. Removidas ficam
+ * de fora. O intervalo já chega validado (datas reais, até 42 dias).
+ */
+export const listHistory = (userId: number, from: string, to: string) => sql`
+    select ${columns},
+        to_char((t.created_at at time zone u.time_zone)::date, 'YYYY-MM-DD') as "createdOn",
+        coalesce((
+            select json_agg(to_char(c.date, 'YYYY-MM-DD') order by c.date)
+            from task_completions c
+            where c.task_id = t.id and c.date between ${from}::date and ${to}::date
+        ), '[]'::json) as "doneDates"
+    from tasks t join users u on u.id = t.user_id
+    where t.user_id = ${userId} and t.deleted_at is null
+        and (t.date between ${from}::date and ${to}::date
+            or (t.recurring_days is not null
+                and (t.created_at at time zone u.time_zone)::date <= ${to}::date))
+    order by t.id`;
+
+/** O dia (no fuso do usuário) em que a conta foi criada: o limite do "‹" no calendário. */
+export const accountSince = (userId: number) => sql`
+    select to_char((created_at at time zone time_zone)::date, 'YYYY-MM-DD') as since
+    from users where id = ${userId}`;
