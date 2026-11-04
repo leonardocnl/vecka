@@ -95,7 +95,6 @@ Regra: **tecla sobe, campo desce, escolhido afunda.** Nada de sombra fora desta 
 | `V3Ajustes.dc.html`   | ajustes abertos pelo botão giratório                                 |
 | `V3Login.dc.html`     | entrar                                                               |
 | `V3Noturno.dc.html`   | tema escuro (dia)                                                    |
-| `Sistema.dc.html`     | quadro de componentes (superfícies, teclas, campos, marcadores)      |
 
 ### O que muda no comportamento
 
