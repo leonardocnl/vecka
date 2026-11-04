@@ -9,6 +9,8 @@ export const FONT_STEPS = 4;
 export const DEFAULT_FONT_STEP = 1;
 
 export type Theme = "light" | "dark";
+/** AUTO = nada salvo: segue o tema do iPhone. */
+export type ThemeChoice = Theme | "auto";
 
 export const parseTheme = (value: string | null): Theme | null =>
     value === "light" || value === "dark" ? value : null;
@@ -18,9 +20,10 @@ export const parseFontStep = (value: string | null): number =>
         ? Number(value)
         : DEFAULT_FONT_STEP;
 
-function write(key: string, value: string) {
+function write(key: string, value: string | null) {
     try {
-        window.localStorage.setItem(key, value);
+        if (value === null) window.localStorage.removeItem(key);
+        else window.localStorage.setItem(key, value);
     } catch {
         // sem localStorage: vale até recarregar
     }
@@ -34,14 +37,13 @@ const subscribe = (listener: () => void) => {
 };
 const notify = () => listeners.forEach((listener) => listener());
 
-function isDarkNow(): boolean {
+function choiceNow(): ThemeChoice {
     const root = document.documentElement.classList;
-    if (root.contains("dark")) return true;
-    if (root.contains("light")) return false;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return root.contains("dark") ? "dark" : root.contains("light") ? "light" : "auto";
 }
 
-export const useDark = () => useSyncExternalStore(subscribe, isDarkNow, () => false);
+export const useThemeChoice = () =>
+    useSyncExternalStore(subscribe, choiceNow, (): ThemeChoice => "auto");
 export const useFontStep = () =>
     useSyncExternalStore(
         subscribe,
@@ -49,12 +51,12 @@ export const useFontStep = () =>
         () => DEFAULT_FONT_STEP,
     );
 
-/** Sem tema salvo, segue o sistema (como o legacy); o ícone fixa a escolha neste aparelho. */
-export function applyTheme(theme: Theme, save: boolean) {
+/** AUTO apaga a escolha (segue o sistema); CLARO e ESCURO a fixam neste aparelho. */
+export function applyTheme(theme: ThemeChoice, save: boolean) {
     const root = document.documentElement.classList;
     root.toggle("dark", theme === "dark");
     root.toggle("light", theme === "light");
-    if (save) write(THEME_KEY, theme);
+    if (save) write(THEME_KEY, theme === "auto" ? null : theme);
     notify();
 }
 

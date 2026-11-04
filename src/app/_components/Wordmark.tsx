@@ -1,9 +1,3 @@
-export function Wordmark() {
-    return (
-        <h1
-            role="img"
-            aria-label="Vecka"
-            className="aspect-wordmark w-wordmark wordmark max-phone:w-wordmark-phone"
-        />
-    );
+export function Wordmark({ as: Tag = "h1" }: { as?: "h1" | "div" }) {
+    return <Tag role="img" aria-label="Vecka" className="wordmark" />;
 }

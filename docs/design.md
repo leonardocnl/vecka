@@ -133,6 +133,19 @@ Regra: **tecla sobe, campo desce, escolhido afunda.** Nada de sombra fora desta 
   consulta" (etiqueta técnica) e nenhuma ação.
 - **Kindle:** fora deste visual (rota leve própria, depois).
 
+### Decisões tomadas na implementação (04/11/2026)
+
+- **Adicionar:** com texto no campo, "+" (ou Enter) adiciona direto, sem horário, só no dia
+  mostrado. Com o campo vazio, "+" abre a mesma folha da edição com o título **NOVA TAREFA**
+  (texto, hora, minutos, repetir; sem nota). Na folha, "sem horário" limpa a hora.
+- **Dia passado / distante:** topo igual ao do calendário (tecla clara "‹ Calendário" e o botão
+  giratório), sem dial. O distante mantém a barra de baixo para adicionar; o passado fica sem
+  barra.
+- **Calendário:** "N pendentes" = dias do mês, de hoje em diante, com tarefa avulsa não feita (a
+  mesma regra do ponto). Dias anteriores à criação da conta ficam desativados (opacidade 0,4).
+- **Entrar:** wordmark grande acima do dial, e o LED **sem** brilho (só as sombras da tabela).
+- **Tarefa feita:** o horário some (como nos mockups); a recorrência continua.
+
 ## Animações (fase 4)
 
 Curtas (150–250 ms, `ease-out`), todas desligadas com `prefers-reduced-motion`:
