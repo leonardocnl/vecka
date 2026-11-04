@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Vecka — ajustes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #E7E4DC; color: #1E1E1E; font-family: 'IBM Plex Sans', sans-serif; position: relative; overflow: hidden">
+    <svg aria-hidden="true" width="390" height="844" style="position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply; opacity: 0.55">
+        <filter id="grain-aj"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"></feTurbulence><feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.33  0 0 0 0 0.3  0 0 0 0.22 0"></feColorMatrix></filter>
+        <rect width="390" height="844" filter="url(#grain-aj)"></rect>
+    </svg>
+    <div style="position: absolute; left: 16px; right: 16px; top: 130px; height: 170px; border-radius: 24px; background: #232321; opacity: 0.35"></div>
+    <div style="position: absolute; left: 16px; right: 16px; top: 316px; height: 400px; border-radius: 24px; background: #F3F1EB; opacity: 0.5"></div>
+
+    <div style="position: relative; padding: 56px 16px 0 16px">
+        <header style="display: flex; align-items: center; height: 48px">
+            <svg viewBox="0 0 433 144" style="width: 134px; height: 45px; fill: #1E1E1E" role="img" aria-label="Vecka"><path fill-rule="evenodd" d="M283.216 80.9404H286.465L325.857 42H353.677L303.115 90.4746L338.491 125.605L366.5 42H399.5L433 142H411L384.613 57.0176H381.387L355 142H327.685L286.465 100.414H283.216V142H262.301V127.754C258.562 132.294 253.88 136.031 248.252 138.962C241.545 142.321 233.429 144 223.905 144C214.382 144 205.729 141.985 197.949 137.954C190.303 133.923 184.2 128.078 179.64 120.42C175.834 113.836 173.667 106.111 173.133 97.2441H102.46C102.73 105.977 105.632 112.963 111.166 118.203C116.835 123.309 123.855 125.861 132.224 125.861C140.053 125.861 145.925 124.115 149.84 120.622C153.889 117.129 156.994 113.097 159.153 108.529L176.364 117.397C174.474 121.159 171.707 125.123 168.062 129.288C164.553 133.453 159.896 136.946 154.092 139.768C148.287 142.589 140.863 144 131.819 144C121.695 144 112.853 141.917 105.294 137.752C97.7349 133.453 91.796 127.474 87.4766 119.815C83.964 113.274 81.9254 105.881 81.3613 97.6357L66.5 142H33.5L0 42H22L48.3867 126.982H51.6133L78 42H100L96.9297 51.1631C99.3359 48.9819 101.989 47.0766 104.89 45.4492C112.449 41.1499 121.155 39 131.009 39C140.593 39 148.962 41.1499 156.116 45.4492C163.405 49.6143 169.075 55.4585 173.125 62.9824C174.338 65.2367 175.368 67.6064 176.218 70.0898C177.154 67.5048 178.294 65.0683 179.64 62.7812C184.2 55.1231 190.304 49.2787 197.949 45.248C205.729 41.083 214.382 39 223.905 39C233.429 39 241.545 40.747 248.252 44.2402C253.879 47.1714 258.562 50.907 262.301 55.4463V0H283.216V80.9404ZM224.308 57.541C218.54 57.541 213.308 58.8852 208.613 61.5723C204.053 64.125 200.431 67.8873 197.748 72.8584C195.066 77.6951 193.725 83.6066 193.725 90.5928V92.4072C193.725 99.3936 195.065 105.373 197.748 110.344C200.431 115.315 204.053 119.077 208.613 121.63C213.308 124.183 218.54 125.459 224.308 125.459C233.027 125.459 239.667 123.241 244.228 118.808C248.788 114.24 251.672 108.462 252.879 101.476L262.301 103.646V79.415L252.275 81.5244C251.605 77.0906 250.196 73.0593 248.05 69.4316C245.904 65.8042 242.886 62.9153 238.996 60.7656C235.106 58.6159 230.21 57.541 224.308 57.541ZM130.807 57.3398C122.977 57.3398 116.566 59.4896 111.571 63.7891C106.712 67.9541 103.742 73.7984 102.662 81.3223H157.938C157.398 73.7985 154.699 67.9541 149.84 63.7891C144.98 59.4896 138.636 57.3398 130.807 57.3398Z"></path></svg>
+            <button type="button" aria-label="Fechar ajustes" aria-expanded="true" style="margin-left: auto; width: 44px; height: 44px; border-radius: 22px; background: #2B2B28; box-shadow: inset 0 1px 3px rgba(0,0,0,0.6); position: relative"><span aria-hidden="true" style="position: absolute; left: 31px; top: 21px; width: 10px; height: 2px; border-radius: 1px; background: #C4F000"></span></button>
+        </header>
+
+        <section role="dialog" aria-label="Ajustes" style="margin-top: 12px; margin-left: 40px; background: #F3F1EB; border-radius: 24px; padding: 8px 18px 10px 18px; box-shadow: inset 0 1px 0 #FFFFFF, 0 0 0 1px #CFCBC2, 0 12px 30px rgba(40,30,10,0.22)">
+            <div style="display: flex; align-items: center; gap: 8px; height: 36px">
+                <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: #4F4E4B">AJUSTES</span>
+                <span style="flex: 1; height: 2px; background: #1E1E1E"></span>
+            </div>
+
+            <p style="margin: 8px 0 8px 0; font-size: 14px; color: #4F4E4B">Tamanho do texto</p>
+            <div style="display: flex; align-items: center; gap: 8px">
+                <button type="button" aria-label="Diminuir texto" style="width: 48px; height: 44px; border-radius: 22px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px">A</button>
+                <div style="flex: 1; height: 44px; border-radius: 22px; background: #E9E6DE; box-shadow: inset 0 1px 2px rgba(40,30,10,0.18), 0 0 0 1px #CFCBC2; display: flex; align-items: center; justify-content: center; gap: 6px">
+                    <span style="width: 6px; height: 6px; border-radius: 3px; background: #8E8D89"></span>
+                    <span style="width: 6px; height: 6px; border-radius: 3px; background: #1E1E1E"></span>
+                    <span style="width: 6px; height: 6px; border-radius: 3px; background: #C4C1B9"></span>
+                    <span style="width: 6px; height: 6px; border-radius: 3px; background: #C4C1B9"></span>
+                </div>
+                <button type="button" aria-label="Aumentar texto" style="width: 48px; height: 44px; border-radius: 22px; background: #F3F1EB; box-shadow: 0 0 0 1px rgba(30,30,30,0.10), 0 1px 2px rgba(40,30,10,0.10); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 19px">A</button>
+            </div>
+
+            <p style="margin: 18px 0 8px 0; font-size: 14px; color: #4F4E4B">Tema</p>
+            <div role="radiogroup" aria-label="Tema" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); height: 44px; border-radius: 22px; background: #E9E6DE; box-shadow: inset 0 1px 2px rgba(40,30,10,0.18), 0 0 0 1px #CFCBC2; padding: 4px; box-sizing: border-box">
+                <button type="button" role="radio" aria-checked="true" style="border-radius: 18px; background: #232321; color: #C4F000; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.4); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1px">AUTO</button>
+                <button type="button" role="radio" aria-checked="false" style="border-radius: 18px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1px; color: #4F4E4B">CLARO</button>
+                <button type="button" role="radio" aria-checked="false" style="border-radius: 18px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1px; color: #4F4E4B">ESCURO</button>
+            </div>
+            <p style="margin: 6px 0 0 0; font-size: 12px; color: #4F4E4B">Auto segue o tema do iPhone.</p>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 10px; border-top: 1px dashed #C4C1B9">
+                <span style="font-size: 13px; color: #4F4E4B">[seu e-mail]</span>
+                <button type="button" style="height: 44px; font-size: 14px; text-decoration: underline">Sair</button>
+            </div>
+        </section>
+    </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+    renderVals() {
+        return {};
+    }
+}
+</script>
+</body>
+</html>
