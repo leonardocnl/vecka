@@ -181,9 +181,39 @@ temas.
 
 ## Animações (fase 4)
 
-Curtas (150–250 ms, `ease-out`), todas desligadas com `prefers-reduced-motion`:
-ponteiro deslizando no dial; placas de virar; tecla afundando ao tocar (`pressed`); tarefa abrindo
-no card; folha subindo; painel de ajustes abrindo a partir do botão giratório.
+Tokens em `globals.css`: durações `--duration-press` 150 ms, `--duration-state` 200 ms,
+`--duration-enter` 250 ms; curvas `--ease-out` `cubic-bezier(0.16, 1, 0.3, 1)` (chega
+desacelerando) e `--ease-in` `cubic-bezier(0.55, 0, 1, 0.45)` (só a placa que cai). Nada fora
+deles. Só CSS; a animação nunca atrasa a ação (a tela muda na hora, o movimento vem por cima).
+
+- **Ponteiro do dial:** desliza até o dia escolhido (`state`). Arrastando o dial, segue o dedo.
+- **Placas de virar:** ao trocar de dia (ou de mês), a metade de cima do algarismo antigo cai
+  sobre o novo (`rotateX` até −90°, `state`, `ease-in`).
+- **Tecla:** afunda na hora do toque (`pressed` e 1 px para baixo, sem transição) e volta suave
+  ao soltar (`press`).
+- **Tarefa abrindo:** o painel cresce de 0 até a altura dele, com fade (`state`).
+- **Folha:** sobe 24 px com fade e o fundo escurece (`enter`). Fecha na hora.
+- **Ajustes:** crescem de 92% a partir do botão giratório (`state`). Fecham na hora.
+- **Movimento reduzido** (`prefers-reduced-motion`): nada se desloca; teclas, ponteiro e placas
+  trocam na hora; folha, ajustes e tarefa aberta aparecem com um fade de 150 ms.
+
+## Gestos (fase 4)
+
+Pointer events, sem dependência (`src/app/_components/swipe.ts`).
+
+- **Tarefa:** deslizar para a direita conclui (ou reabre); para a esquerda remove, com o desfazer.
+  A tarefa segue o dedo e revela por baixo um campo afundado com **FEITA** / **REABRIR** ou
+  **REMOVER**. Passou de 96 px: concluir acende o verde (`accent`), remover escurece (`panel`); sem
+  vermelho. Depois do limite a tarefa resiste ao dedo. Soltar antes do limite volta ao lugar.
+  Tarefa aberta não desliza.
+- **Dial:** deslizar move o ponteiro com o dedo; ao soltar, vai para o dia mais perto (no mínimo um
+  dia, a partir de 32 px).
+- Gestos que começam a menos de **24 px** das bordas da tela são do Safari e são ignorados. Só é
+  gesto se o movimento for claramente horizontal (|dx| > 2·|dy|, depois de 10 px); senão, é
+  rolagem.
+- Todo gesto tem equivalente por toque e teclado (a caixa, o Remover da tarefa aberta, os dias do
+  dial), e o resultado é anunciado aos leitores de tela ("Treino: feita.", "quinta 05", e o
+  "removida" do desfazer).
 
 ## Acessibilidade (obrigatório, mantido)
 
