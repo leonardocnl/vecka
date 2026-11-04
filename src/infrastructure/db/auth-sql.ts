@@ -32,7 +32,7 @@ export const createSession = (userId: number, tokenHash: string) => sql`
 
 /** A conta da sessão viva, com o que a tela mostra. Vencida (inatividade ou teto) = nenhuma linha. */
 export const sessionUser = (tokenHash: string) => sql`
-    select u.id, u.email, u.name, s.last_used_at < now() - ${renewAfter} as stale
+    select u.id, u.email, u.name, u.time_zone as "timeZone", s.last_used_at < now() - ${renewAfter} as stale
     from user_sessions s join users u on u.id = s.user_id
     where s.token_hash = ${tokenHash} and s.expires_at > now() and s.absolute_expires_at > now()`;
 

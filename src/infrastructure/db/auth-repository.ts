@@ -27,7 +27,7 @@ export class DrizzleAuthRepository implements AuthRepository {
         const [row] = await this.rows<SessionUser & { stale: boolean }>(q.sessionUser(tokenHash));
         if (!row) return null;
         if (row.stale) await this.db.execute(q.renewSession(tokenHash));
-        return { id: row.id, email: row.email, name: row.name };
+        return { id: row.id, email: row.email, name: row.name, timeZone: row.timeZone };
     }
 
     async signOut(tokenHash: string) {
