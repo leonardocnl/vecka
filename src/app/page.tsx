@@ -10,5 +10,13 @@ export default async function Home() {
     const today = todayIn(user.timeZone, new Date());
     const repo = new DrizzleTasksRepository(createDb());
     const [tasks, since] = await Promise.all([repo.list(user.id, today), repo.since(user.id)]);
-    return <Week today={today} timeZone={user.timeZone} tasks={tasks} since={since ?? today} />;
+    return (
+        <Week
+            today={today}
+            timeZone={user.timeZone}
+            tasks={tasks}
+            since={since ?? today}
+            email={user.email}
+        />
+    );
 }

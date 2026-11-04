@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dateLine, hasHistoryOn, historyFor, monthRange, type HistoryTask } from "./tasks";
+import { hasHistoryOn, historyFor, monthRange, type HistoryTask } from "./tasks";
 
 // Regras do histórico (fase 3). 2026-11-02 é segunda-feira.
 const t = (over: Partial<HistoryTask>): HistoryTask => ({
@@ -64,11 +64,6 @@ describe("historyFor", () => {
 });
 
 describe("textos e intervalos", () => {
-    it("data do dia passado", () => {
-        expect(dateLine("2026-11-03", -1, "10:00")).toBe("3 de novembro de 2026 — ontem");
-        expect(dateLine("2026-10-30", -5, "10:00")).toBe("30 de outubro de 2026 — há 5 dias");
-    });
-
     it("mês inteiro", () => {
         expect(monthRange(2026, 1)).toEqual({ from: "2026-02-01", to: "2026-02-28" });
         expect(monthRange(2026, 11)).toEqual({ from: "2026-12-01", to: "2026-12-31" });

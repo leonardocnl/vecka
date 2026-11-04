@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
     addDays,
     clockIn,
-    dateLine,
+    dialLine,
+    fullDate,
+    pendingDaysIn,
+    recurrenceTag,
     daysBetween,
     daysText,
     hasPendingOn,
@@ -155,11 +158,32 @@ describe("atraso, ponto e textos", () => {
         expect(hasPendingOn([task({ doneDates: ["2026-11-03"] })], "2026-11-03")).toBe(false);
     });
 
-    it("linha da data", () => {
-        expect(dateLine("2026-10-30", 0, "13:05")).toBe("30 de outubro de 2026 — 13:05");
-        expect(dateLine("2026-10-31", 1, "13:05")).toBe("31 de outubro de 2026 — amanhã");
-        expect(dateLine("2026-11-02", 3, "13:05")).toBe("2 de novembro de 2026");
-        expect(dateLine("2026-11-18", 19, "13:05")).toBe("18 de novembro de 2026 — em 19 dias");
+    it("linha ao lado das placas", () => {
+        expect(dialLine("2026-11-04", 0, "14:35")).toBe("novembro · 14:35");
+        expect(dialLine("2026-11-05", 1, "14:35")).toBe("novembro · amanhã");
+        expect(dialLine("2026-11-09", 5, "14:35")).toBe("novembro · em 5 dias");
+        expect(dialLine("2026-11-03", -1, "14:35")).toBe("novembro · ontem");
+        expect(dialLine("2026-10-30", -5, "14:35")).toBe("outubro · há 5 dias");
+        expect(fullDate("2026-11-04")).toBe("4 de novembro de 2026");
+    });
+
+    it("etiqueta da recorrente", () => {
+        expect(recurrenceTag([0, 1, 2, 3, 4, 5, 6])).toBe("↻ DIÁRIO");
+        expect(recurrenceTag([3, 1])).toBe("↻ SEG QUA");
+        expect(recurrenceTag([0, 6])).toBe("↻ DOM SÁB");
+    });
+
+    it("pendentes do mês: dias com avulsa não feita, de hoje em diante", () => {
+        const list = [
+            task({ id: 1, date: "2026-11-02" }), // passado: não conta
+            task({ id: 2, date: "2026-11-04" }),
+            task({ id: 3, date: "2026-11-04" }), // mesmo dia: conta uma vez
+            task({ id: 4, date: "2026-11-05", doneDates: ["2026-11-05"] }), // feita
+            task({ id: 5, date: null, recurringDays: [1] }), // recorrente: não conta
+            task({ id: 6, date: "2026-11-30" }),
+            task({ id: 7, date: "2026-12-01" }), // outro mês
+        ];
+        expect(pendingDaysIn(list, 2026, 10, "2026-11-04")).toBe(2);
     });
 
     it("mês sempre em 6 semanas começando no domingo", () => {

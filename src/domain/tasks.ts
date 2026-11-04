@@ -8,6 +8,8 @@ export const WEEK_LENGTH = 7;
 
 export const DAY_NAMES = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
 export const DAY_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
+/** Abreviações do dial e da recorrência (Space Mono). */
+export const DAY_ABBR = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
 export const DAY_FULL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 export const MONTHS = [
     "janeiro",
@@ -213,17 +215,38 @@ export function daysText(days: readonly number[]): string {
     return `${names.slice(0, -1).join(", ")} e ${names[names.length - 1]}`;
 }
 
-/** "30 de outubro de 2026 — 13:05" (hoje) / "— amanhã" / "— em 19 dias" / "— ontem" / "— há 5 dias". */
-export function dateLine(iso: string, idx: number, clock: string): string {
-    const [y, m, d] = parts(iso);
-    const base = `${d} de ${MONTHS[m - 1]} de ${y}`;
-    if (idx === 0) return `${base} — ${clock}`;
-    if (idx === 1) return `${base} — amanhã`;
-    if (idx > 6) return `${base} — em ${idx} dias`;
-    if (idx === -1) return `${base} — ontem`;
-    if (idx < -1) return `${base} — há ${-idx} dias`;
-    return base;
+/** Ao lado das placas: "novembro · 14:35" (hoje) / "· amanhã" / "· em 5 dias" / "· ontem" / "· há 5 dias". */
+export function dialLine(iso: string, idx: number, clock: string): string {
+    const month = MONTHS[parts(iso)[1] - 1];
+    const when =
+        idx === 0
+            ? clock
+            : idx === 1
+              ? "amanhã"
+              : idx === -1
+                ? "ontem"
+                : idx > 1
+                  ? `em ${idx} dias`
+                  : `há ${-idx} dias`;
+    return `${month} · ${when}`;
 }
+
+/** "4 de novembro de 2026" (rótulo das placas de virar). */
+export function fullDate(iso: string): string {
+    const [y, m, d] = parts(iso);
+    return `${d} de ${MONTHS[m - 1]} de ${y}`;
+}
+
+/** Etiqueta da recorrente: "↻ DIÁRIO" ou "↻ SEG QUA" (na ordem da semana). */
+export const recurrenceTag = (days: readonly number[]): string =>
+    `↻ ${
+        days.length === 7
+            ? "DIÁRIO"
+            : [...days]
+                  .sort()
+                  .map((d) => DAY_ABBR[d])
+                  .join(" ")
+    }`;
 
 /** "31/10" */
 export const shortDate = (iso: string): string => {
@@ -232,6 +255,13 @@ export const shortDate = (iso: string): string => {
 };
 
 // ---------- calendário ----------
+
+/** Quantos dias do mês, de hoje em diante, têm ponto de pendente (avulsa não feita). */
+export function pendingDaysIn(tasks: readonly Task[], year: number, month: number, today: string) {
+    return monthGrid(year, month)
+        .flat()
+        .filter((iso): iso is string => !!iso && iso >= today && hasPendingOn(tasks, iso)).length;
+}
 
 /** O mês em 6 semanas começando no domingo: datas do mês ou null nas casas vazias. */
 export function monthGrid(year: number, month: number): (string | null)[][] {

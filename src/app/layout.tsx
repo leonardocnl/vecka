@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, Space_Mono } from "next/font/google";
 import Script from "next/script";
+import { Grain } from "./_components/Grain";
 import "./globals.css";
 
 const spaceMono = Space_Mono({
@@ -11,7 +12,7 @@ const spaceMono = Space_Mono({
 
 const ibmPlexSans = IBM_Plex_Sans({
     variable: "--font-ibm-plex-sans",
-    weight: ["400", "700"],
+    weight: ["400", "600", "700"],
     subsets: ["latin"],
 });
 
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     appleWebApp: { capable: true, title: "Vecka", statusBarStyle: "default" },
 };
 
-// a barra do calendário fica presa ao fundo, acima da área segura do iPhone
+// a barra inferior fica presa ao fundo, acima da área segura do iPhone
 export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
             <body className="min-h-dvh">
                 <Script src="/appearance.js" strategy="beforeInteractive" />
+                <Grain />
                 {children}
             </body>
         </html>

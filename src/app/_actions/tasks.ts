@@ -51,7 +51,14 @@ async function run<S extends z.ZodType, T>(
     }
 }
 
-export type Week = { today: string; timeZone: string; tasks: Task[]; since: string };
+export type Week = {
+    today: string;
+    timeZone: string;
+    tasks: Task[];
+    since: string;
+    /** o e-mail da conta, mostrado nos ajustes */
+    email: string;
+};
 
 /** Recarrega a lista (ao voltar ao app e depois de um erro). Sem entrada. */
 export async function loadWeek(): Promise<Result<Week>> {
@@ -64,7 +71,13 @@ export async function loadWeek(): Promise<Result<Week>> {
         const [tasks, since] = await Promise.all([repo.list(user.id, today), repo.since(user.id)]);
         return {
             ok: true,
-            value: { today, timeZone: user.timeZone, tasks, since: since ?? today },
+            value: {
+                today,
+                timeZone: user.timeZone,
+                tasks,
+                since: since ?? today,
+                email: user.email,
+            },
         };
     } catch (error) {
         console.error("tarefas: falha ao ler", (error as Error).name);
