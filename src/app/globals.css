@@ -48,6 +48,15 @@
     --spacing-32: 2rem;
 
     --breakpoint-*: initial;
+
+    /* movimento (docs/design.md, "Animações"): três durações e duas curvas, nada fora delas */
+    --duration-press: 150ms; /* tecla soltando, ponteiro, folha caindo */
+    --duration-state: 200ms; /* troca de estado: tarefa abrindo, ajustes, gesto voltando */
+    --duration-enter: 250ms; /* entrada de peça flutuante: folha */
+    --ease-*: initial;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* chega desacelerando */
+    --ease-in: cubic-bezier(0.55, 0, 1, 0.45); /* cai acelerando (placa de virar) */
+    --animate-*: initial;
 }
 
 @layer base {
@@ -624,7 +633,12 @@
     .needle {
         position: absolute;
         top: 0;
-        left: calc((var(--sel) + 0.5) * 100% / 7 - 1.5px);
+        left: clamp(
+            0%,
+            calc((var(--sel) + 0.5) * 100% / 7 - 1.5px + var(--drag, 0px)),
+            calc(100% - 3px)
+        );
+        transition: left var(--duration-state) var(--ease-out);
         width: 3px;
         height: 30px;
         border-radius: 1.5px;
@@ -675,7 +689,7 @@
         height: 2px;
         background: var(--color-flap-gap);
     }
-    .flap span {
+    .flap-digit {
         position: absolute;
         inset: 0;
         display: flex;
@@ -696,7 +710,7 @@
     .flaps.small .flap::after {
         top: 29px;
     }
-    .flaps.small .flap span {
+    .flaps.small .flap-digit {
         font-size: 42px;
     }
     .card-title {
@@ -1409,5 +1423,229 @@
         background: var(--color-plate);
         box-shadow: var(--shadow-float);
         font-size: 14px;
+    }
+
+    /* ===== Movimento ===== */
+
+    /* tecla: afunda na hora do toque e volta suave ao soltar */
+    :is(
+        .knob,
+        .key-light,
+        .font-key,
+        .key-sm,
+        .dock-key,
+        .grid-keys button,
+        .sheet-actions button,
+        .signin-btn,
+        .cal-day,
+        .segmented button
+    ) {
+        transition:
+            box-shadow var(--duration-press) var(--ease-out),
+            translate var(--duration-press) var(--ease-out),
+            background-color var(--duration-press) var(--ease-out);
+    }
+    :is(
+            .knob,
+            .key-light,
+            .font-key,
+            .key-sm,
+            .dock-key,
+            .grid-keys button,
+            .sheet-actions button,
+            .signin-btn,
+            .cal-day,
+            .segmented button
+        ):active:not(:disabled) {
+        translate: 0 1px;
+        transition-duration: 0s;
+    }
+    .knob::after {
+        transition:
+            left var(--duration-state) var(--ease-out),
+            top var(--duration-state) var(--ease-out),
+            width var(--duration-state) var(--ease-out),
+            height var(--duration-state) var(--ease-out);
+    }
+
+    /* placa de virar: a metade de cima do algarismo antigo cai sobre o novo */
+    .flap {
+        perspective: 240px;
+    }
+    .flap-leaf {
+        position: absolute;
+        z-index: 1;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 50%;
+        overflow: hidden;
+        background: var(--color-flap-top);
+        transform-origin: 50% 100%;
+        backface-visibility: hidden;
+        animation: flap-fall var(--duration-state) var(--ease-in) forwards;
+    }
+    .flap-leaf .flap-digit {
+        bottom: auto;
+        height: 200%;
+    }
+    @keyframes flap-fall {
+        to {
+            transform: rotateX(-90deg);
+        }
+    }
+
+    /* ponteiro: segue o dedo sem atraso enquanto o dial é arrastado */
+    .dial {
+        touch-action: pan-y;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    .dial.dragging .needle {
+        transition: none;
+    }
+
+    /* tarefa abrindo no lugar: o painel cresce de 0 até a altura dele */
+    .task {
+        transition:
+            background-color var(--duration-state) var(--ease-out),
+            box-shadow var(--duration-state) var(--ease-out);
+    }
+    .task-panel {
+        display: grid;
+        animation: grow-in var(--duration-state) var(--ease-out);
+    }
+    .task-panel > div {
+        min-height: 0;
+        overflow: hidden;
+    }
+    @keyframes grow-in {
+        from {
+            grid-template-rows: 0fr;
+            opacity: 0;
+        }
+        to {
+            grid-template-rows: 1fr;
+            opacity: 1;
+        }
+    }
+
+    /* folha subindo e fundo escurecendo */
+    .sheet[open] {
+        animation: rise-in var(--duration-enter) var(--ease-out);
+    }
+    .sheet[open]::backdrop {
+        animation: fade-in var(--duration-enter) var(--ease-out);
+    }
+    @keyframes rise-in {
+        from {
+            transform: translateY(24px);
+            opacity: 0;
+        }
+    }
+
+    /* ajustes saindo do botão giratório (canto de cima à direita) */
+    .settings {
+        transform-origin: calc(100% - 22px) -16px;
+        animation: pop-in var(--duration-state) var(--ease-out);
+    }
+    @keyframes pop-in {
+        from {
+            transform: scale(0.92);
+            opacity: 0;
+        }
+    }
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+    }
+
+    /* deslizar a tarefa: ela segue o dedo e revela por baixo o que vai acontecer */
+    .task {
+        position: relative;
+        touch-action: pan-y;
+    }
+    .task-row {
+        position: relative;
+        transition: transform var(--duration-state) var(--ease-out);
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    .task.swiping {
+        overflow: hidden;
+    }
+    .task.swiping .task-row {
+        transform: translateX(var(--dx));
+        transition: none;
+        background: var(--color-plate);
+    }
+    .swipe-under {
+        position: absolute;
+        inset: 4px 0;
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-radius: 12px;
+        background: var(--color-sunken);
+        box-shadow: var(--shadow-field);
+        color: var(--color-muted);
+        font-family: var(--font-title);
+        font-size: 11px;
+        letter-spacing: 2px;
+        transition:
+            background-color var(--duration-press) var(--ease-out),
+            color var(--duration-press) var(--ease-out);
+    }
+    .task.swiping .swipe-under {
+        display: flex;
+    }
+    .task[data-dir="done"] .swipe-remove,
+    .task[data-dir="remove"] .swipe-done {
+        visibility: hidden;
+    }
+    /* passou do limite: concluir acende o verde; remover escurece (sem vermelho) */
+    .task[data-dir="done"][data-armed] .swipe-under {
+        background: var(--color-accent);
+        color: var(--color-on-accent);
+    }
+    .task[data-dir="remove"][data-armed] .swipe-under {
+        background: var(--color-panel);
+        color: var(--color-ink-on-panel);
+    }
+
+    /*
+     * Movimento reduzido: nada se desloca. Teclas e estados trocam na hora; as peças que entram
+     * (folha, ajustes, tarefa aberta) só aparecem com um fade curto.
+     */
+    @media (prefers-reduced-motion: reduce) {
+        :root {
+            --duration-press: 0s;
+            --duration-state: 0s;
+            --duration-enter: 150ms;
+        }
+        .flap-leaf {
+            display: none;
+        }
+        .sheet[open],
+        .settings,
+        .task-panel {
+            animation: fade-in var(--duration-enter) var(--ease-out);
+        }
+        :is(
+                .knob,
+                .key-light,
+                .font-key,
+                .key-sm,
+                .dock-key,
+                .grid-keys button,
+                .sheet-actions button,
+                .signin-btn,
+                .cal-day,
+                .segmented button
+            ):active:not(:disabled) {
+            translate: none;
+        }
     }
 }
