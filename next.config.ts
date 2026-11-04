@@ -4,6 +4,8 @@ import { securityHeaders } from "./src/infrastructure/http/security-headers";
 const nextConfig: NextConfig = {
     // security.md §10: sem X-Powered-By
     poweredByHeader: false,
+    // sem o selo do Next sobre a tela no desenvolvimento
+    devIndicators: false,
     async headers() {
         // em todas as respostas: páginas, API, 404 e arquivos estáticos (security.md §10)
         return [

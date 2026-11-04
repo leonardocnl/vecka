@@ -16,6 +16,8 @@
     --color-done-text: #575653; /* texto da tarefa concluída */
     --color-line: #a8a7a3; /* linhas entre os dias */
     --color-signal: #cf1020; /* o único vermelho, igual nos dois temas */
+    --color-field: #8e8d89; /* linha dos campos de texto (como no legacy) */
+    --color-disabled: #8e8d89; /* dia passado no calendário (desabilitado) */
     --color-white: #ffffff; /* texto sobre a etiqueta vermelha */
 
     /* fontes (as variáveis vêm do next/font, em layout.tsx) */
@@ -52,6 +54,8 @@
             --color-day-closed: #a9a8a4;
             --color-done-text: #a3a29e;
             --color-line: #555555;
+            --color-field: #7a7976;
+            --color-disabled: #77766f;
         }
     }
     :root.dark {
@@ -62,6 +66,8 @@
         --color-day-closed: #a9a8a4;
         --color-done-text: #a3a29e;
         --color-line: #555555;
+        --color-field: #7a7976;
+        --color-disabled: #77766f;
     }
 
     html {
@@ -99,4 +105,613 @@
 @utility wordmark {
     background-color: var(--color-ink);
     mask: url("/wordmark.svg") center / contain no-repeat;
+}
+
+/*
+ * Telas das tarefas, portadas de legacy/index.html com as mesmas medidas. As cores vêm dos tokens
+ * acima, então o tema escuro troca sozinho.
+ */
+@layer components {
+    .app {
+        max-width: 720px;
+        margin: 0 auto;
+        padding-bottom: 96px;
+        line-height: normal;
+    }
+    /* tamanho da letra: 4 passos, como o zoom do legacy */
+    :root[data-font="0"] .app {
+        zoom: 0.85;
+    }
+    :root[data-font="2"] .app {
+        zoom: 1.15;
+    }
+    :root[data-font="3"] .app {
+        zoom: 1.3;
+    }
+    .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+    }
+    /* títulos recebem foco por programa (abrir dia, trocar de tela): sem contorno nem anel */
+    h2:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    /* ===== Topo ===== */
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 24px 0 24px;
+    }
+    .top-actions {
+        display: flex;
+        align-items: center;
+    }
+    .link {
+        background: none;
+        border: none;
+        color: var(--color-muted);
+        font-size: 18px;
+        padding: 12px 0 12px 16px;
+        min-height: 48px;
+        min-width: 44px;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    .link:disabled {
+        opacity: 0.35;
+        text-decoration: none;
+    }
+    .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 48px;
+        padding: 0;
+        margin-left: 4px;
+        background: none;
+        border: none;
+        color: var(--color-muted);
+        font-family: var(--font-title);
+        font-weight: bold;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .icon-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+    .icon-btn.a-sm {
+        font-size: 15px;
+    }
+    .icon-btn.a-lg {
+        font-size: 24px;
+    }
+    .icon-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+    @media (max-width: 480px) {
+        .topbar {
+            padding: 16px 16px 0 16px;
+        }
+        .link {
+            font-size: 16px;
+            padding: 12px 0 12px 12px;
+            min-width: 36px;
+        }
+    }
+    .status {
+        padding: 8px 24px 0 24px;
+        font-size: 16px;
+        color: var(--color-muted);
+    }
+    .status.error {
+        color: var(--color-white);
+        font-weight: bold;
+    }
+    .status.error span {
+        display: inline-block;
+        padding: 4px 8px;
+        background: var(--color-signal);
+    }
+
+    /* ===== Dias ===== */
+    .day {
+        border-bottom: 1px solid var(--color-line);
+        padding: 0 24px;
+    }
+    .day-title {
+        margin: 0;
+        font-size: inherit;
+    }
+    .day-head {
+        display: block;
+        width: 100%;
+        margin: 0;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 24px 0;
+        font-family: var(--font-title);
+        font-size: 44px;
+        font-weight: bold;
+        line-height: normal;
+        color: var(--color-day-closed);
+        cursor: pointer;
+    }
+    .open .day-head {
+        padding: 32px 0 8px 0;
+        font-size: 52px;
+        color: var(--color-ink-open);
+        cursor: default;
+    }
+    .count {
+        border: 2px solid currentColor;
+        padding: 0 6px;
+    }
+    .count,
+    .tag,
+    .dd {
+        font-family: var(--font-sans);
+        font-size: 20px;
+        font-weight: normal;
+        color: var(--color-muted);
+        letter-spacing: 0;
+        margin-left: 16px;
+    }
+    .date {
+        color: var(--color-muted);
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+    .empty {
+        margin: 8px 0;
+        font-size: 20px;
+        color: var(--color-muted);
+    }
+
+    /* ===== Tarefas ===== */
+    .task {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-height: 52px;
+    }
+    .task-cell {
+        flex: 1;
+        min-width: 0;
+    }
+    .task-main {
+        display: block;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 0;
+        font-size: 22px;
+        color: inherit;
+        line-height: 1.3;
+        cursor: pointer;
+        overflow-wrap: anywhere;
+    }
+    .task-actions {
+        white-space: nowrap;
+    }
+    .temp {
+        opacity: 0.6;
+    }
+    .box {
+        position: relative;
+        display: inline-block;
+        width: 26px;
+        height: 26px;
+        border: 2px solid var(--color-ink);
+        margin-right: 12px;
+        vertical-align: -4px;
+    }
+    /* feita: ✕ vermelho "de caneta", dois traços levemente desiguais */
+    .done .box::before,
+    .done .box::after {
+        content: "";
+        position: absolute;
+        left: -2px;
+        top: 9px;
+        width: 26px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--color-signal);
+    }
+    .done .box::before {
+        transform: rotate(47deg);
+    }
+    .done .box::after {
+        top: 10px;
+        width: 25px;
+        transform: rotate(-44deg);
+    }
+    .done .label {
+        text-decoration: line-through;
+        text-decoration-color: var(--color-signal);
+        color: var(--color-done-text);
+    }
+    .rec {
+        color: var(--color-muted);
+        font-size: 18px;
+        margin-left: 6px;
+    }
+    .small {
+        background: none;
+        border: none;
+        color: var(--color-muted);
+        font-size: 17px;
+        min-width: 48px;
+        min-height: 48px;
+        cursor: pointer;
+    }
+    .more {
+        font-size: 22px;
+        letter-spacing: 1px;
+    }
+    .note-ic {
+        display: inline-block;
+        margin-left: 8px;
+        color: var(--color-muted);
+        vertical-align: -2px;
+    }
+    .note-ic svg {
+        width: 16px;
+        height: 16px;
+    }
+    .task-panel {
+        padding: 0 0 16px 38px;
+    }
+    .task-note {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        line-height: 1.4;
+        color: var(--color-muted);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+    .task-time {
+        white-space: nowrap;
+        padding-left: 16px;
+        font-family: var(--font-title);
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--color-muted);
+    }
+    .task-time.late span {
+        padding: 2px 6px;
+        background: var(--color-signal);
+        color: var(--color-white);
+    }
+    .done .task-time {
+        font-weight: normal;
+    }
+
+    /* ===== Formulários ===== */
+    .add {
+        margin: 16px 0 32px 0;
+    }
+    .field {
+        width: 100%;
+        border: none;
+        border-bottom: 2px solid var(--color-field);
+        font-size: 22px;
+        padding: 12px 0;
+        background: transparent;
+        color: var(--color-ink);
+        border-radius: 0;
+        outline: none;
+        appearance: none;
+    }
+    .field:focus {
+        border-bottom-color: var(--color-signal);
+    }
+    .field::placeholder {
+        color: var(--color-day-closed);
+        opacity: 1;
+    }
+    .note-field {
+        display: block;
+        width: 100%;
+        min-height: 88px;
+        border: 2px solid var(--color-field);
+        padding: 8px;
+        font-size: 18px;
+        line-height: 1.4;
+        background: transparent;
+        color: var(--color-ink);
+        border-radius: 0;
+        outline: none;
+        resize: vertical;
+        appearance: none;
+    }
+    .note-field:focus {
+        border-color: var(--color-signal);
+    }
+    .tp {
+        margin-top: 8px;
+    }
+    .tp-grid {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .tp-grid td {
+        padding: 0 8px 8px 0;
+    }
+    .tp-btn {
+        display: block;
+        width: 100%;
+        height: 48px;
+        padding: 0;
+        border: 2px solid var(--color-ink);
+        background: transparent;
+        color: var(--color-ink);
+        font-family: var(--font-title);
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .tp-btn.on {
+        background: var(--color-ink);
+        color: var(--color-paper);
+    }
+    .tp-night {
+        padding-left: 0;
+    }
+    .tp-result {
+        margin-top: 8px;
+        font-size: 20px;
+    }
+    .tp-result strong {
+        font-family: var(--font-title);
+    }
+    .weekdays {
+        margin-top: 8px;
+    }
+    .wd {
+        display: inline-block;
+        width: 48px;
+        height: 48px;
+        border: 2px solid var(--color-ink);
+        background: transparent;
+        color: var(--color-ink);
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 8px 8px 0;
+        cursor: pointer;
+    }
+    .wd.on {
+        background: var(--color-ink);
+        color: var(--color-paper);
+    }
+    /* como no legacy: o <label class="hint"> da nota é inline (sem a margem de cima) */
+    .hint {
+        font-size: 16px;
+        color: var(--color-muted);
+        margin: 16px 0 8px 0;
+    }
+    label.hint {
+        display: inline;
+    }
+    .btn {
+        border: 2px solid var(--color-ink);
+        background: var(--color-ink);
+        color: var(--color-paper);
+        font-size: 18px;
+        padding: 0 24px;
+        min-height: 48px;
+        margin: 16px 8px 0 0;
+        cursor: pointer;
+    }
+    .btn.alt {
+        background: transparent;
+        color: var(--color-ink);
+    }
+    .btn.alt.on {
+        background: var(--color-ink);
+        color: var(--color-paper);
+    }
+    .btn.sm {
+        min-height: 44px;
+        padding: 0 16px;
+        margin-top: 8px;
+        font-size: 17px;
+    }
+    .btn.sq {
+        min-width: 44px;
+        padding: 0;
+        font-size: 20px;
+    }
+    .edit {
+        padding: 8px 0 24px 0;
+    }
+
+    /* ===== Calendário ===== */
+    .back-nav {
+        padding: 8px 24px 0 24px;
+    }
+    .back-nav .link {
+        padding-left: 0;
+    }
+    .cal {
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+    }
+    .cal-center {
+        width: 100%;
+        padding: 24px 0;
+    }
+    .cal-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 16px 24px calc(32px + env(safe-area-inset-bottom)) 24px;
+        background-color: var(--color-paper);
+        background-image: url("/paper.png");
+    }
+    .cal-head {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 672px;
+        margin: 0 auto;
+    }
+    .cal-pad {
+        display: block;
+        height: 58px;
+    }
+    .cal-cell {
+        width: 56px;
+    }
+    .cal-cell.right {
+        text-align: right;
+    }
+    .cal-title {
+        flex: 1;
+        margin: 0;
+        text-align: center;
+        font-family: var(--font-title);
+        font-size: 32px;
+        font-weight: bold;
+        color: var(--color-ink-open);
+    }
+    .cal-arrow {
+        width: 52px;
+        height: 52px;
+        background: transparent;
+        border: 2px solid var(--color-ink);
+        color: var(--color-ink);
+        font-size: 28px;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .cal-arrow:disabled {
+        opacity: 0.25;
+        cursor: default;
+    }
+    .cal-grid {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .cal-grid th {
+        padding: 6px 0;
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--color-muted);
+        text-align: center;
+    }
+    .cal-grid abbr {
+        text-decoration: none;
+    }
+    .cal-grid td {
+        padding: 2px;
+        text-align: center;
+    }
+    .cal-day {
+        display: block;
+        width: 100%;
+        height: 58px;
+        padding: 0;
+        background: transparent;
+        border: 1px solid var(--color-line);
+        color: var(--color-ink);
+        font-size: 20px;
+        cursor: pointer;
+    }
+    .cal-day.today {
+        border: 3px solid var(--color-ink);
+        font-weight: bold;
+    }
+    .cal-day:disabled {
+        border-color: transparent;
+        color: var(--color-disabled);
+        cursor: default;
+    }
+    .dot {
+        display: block;
+        width: 8px;
+        height: 8px;
+        margin: 3px auto 0 auto;
+        border-radius: 4px;
+        background: var(--color-signal);
+    }
+    @media (max-width: 480px) {
+        .cal-title {
+            font-size: 22px;
+        }
+        .cal-day {
+            height: 48px;
+            font-size: 18px;
+        }
+        .cal-pad {
+            height: 48px;
+        }
+        .cal-bar {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+    }
+
+    /* ===== Aviso "desfazer" ===== */
+    .toast {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--color-ink);
+        color: var(--color-paper);
+        padding: 4px 24px;
+        font-size: 18px;
+        line-height: normal;
+    }
+    .toast-inner {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 672px;
+        margin: 0 auto;
+    }
+    .toast-text {
+        flex: 1;
+    }
+    .toast-btn {
+        background: none;
+        border: none;
+        color: var(--color-paper);
+        font-size: 18px;
+        font-weight: bold;
+        text-decoration: underline;
+        min-height: 48px;
+        padding: 0 0 0 16px;
+        cursor: pointer;
+    }
+
+    /* celular: margem lateral de 16px em tudo */
+    @media (max-width: 480px) {
+        .status,
+        .day,
+        .back-nav,
+        .cal {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+    }
 }

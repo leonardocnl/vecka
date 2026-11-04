@@ -1,20 +1,13 @@
+import "server-only";
 import { requireUser } from "@/app/_auth/session";
-import { signOut } from "@/app/_auth/actions";
-import { Wordmark } from "@/app/_components/Wordmark";
+import { todayIn } from "@/domain/tasks";
+import { createDb } from "@/infrastructure/db/client";
+import { DrizzleTasksRepository } from "@/infrastructure/db/tasks-repository";
+import { Week } from "@/app/_components/Week";
 
 export default async function Home() {
-    await requireUser();
-    return (
-        <div className="mx-auto max-w-page">
-            <header className="flex items-center justify-between px-gutter pt-24">
-                <Wordmark />
-                <form action={signOut}>
-                    <button type="submit" className="min-h-target text-muted">
-                        sair
-                    </button>
-                </form>
-            </header>
-            <main />
-        </div>
-    );
+    const user = await requireUser();
+    const today = todayIn(user.timeZone, new Date());
+    const tasks = await new DrizzleTasksRepository(createDb()).list(user.id, today);
+    return <Week today={today} timeZone={user.timeZone} tasks={tasks} />;
 }

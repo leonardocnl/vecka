@@ -49,6 +49,12 @@ Adapted from the Kinne baseline. Every feature is specified, built and reviewed 
 - Past days are read-only on the server too, not only in the UI.
 - Database access goes only through Drizzle with bound parameters. No string-built SQL.
 
+Phase 2 (tasks), as built:
+
+- Server actions in `src/app/_actions/tasks.ts`; schemas in `task-schemas.ts` (`z.strictObject`; text 1–300 after trim, note ≤ 1000, `HH:MM`, real calendar dates, weekdays 0–6 without repeats, ids as positive int4).
+- Every statement in `src/infrastructure/db/tasks-sql.ts` filters by `user_id` and `deleted_at is null`; "today" comes from the user's stored time zone (`users.time_zone`, default `America/Sao_Paulo`). Writes to past days are refused on the server; a completion must be for a day the task applies to; ↑ ↓ positions are computed on the server.
+- Attack tests (`tasks.db.test.ts`, job `auth-db`): another user can't read, edit, mark, move or remove a task; removed tasks accept nothing; the database rejects invalid schedules.
+
 ## 6. Output, errors and logging
 
 - Users see only generic messages in pt-BR. No stack traces, SQL, table names or library versions.
@@ -58,7 +64,7 @@ Adapted from the Kinne baseline. Every feature is specified, built and reviewed 
 
 ## 7. Abuse and rate limiting
 
-- Writes are rate limited per user; the limiter is portable (Postgres or in-memory), never a vendor-only store.
+- Writes are rate limited per user; the limiter is portable (Postgres or in-memory), never a vendor-only store. Phase 2: in-memory per instance, 120 burst and 2/s per user (`src/infrastructure/memory-limiter.ts`).
 - The reminder trigger requires a secret compared in constant time, and is idempotent (`reminders_sent`).
 - If the limiter cannot answer, the action is refused (fail closed).
 
@@ -73,6 +79,7 @@ Adapted from the Kinne baseline. Every feature is specified, built and reviewed 
 - `localStorage`/`sessionStorage` hold only non-sensitive preferences (theme, font size).
 - Never tokens, credentials or anything that grants access. The session token lives only in an `HttpOnly` cookie.
 - Everything read from storage is untrusted: parsed with a schema; invalid data is discarded.
+- Theme and font size are applied before paint by `public/appearance.js` (a same-origin file, so no new inline script), which accepts only the known values.
 
 ## 10. HTTP security headers
 

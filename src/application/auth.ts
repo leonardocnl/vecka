@@ -6,7 +6,7 @@ import { isAllowedEmail } from "@/domain/auth";
 
 export type OAuthAttempt = { state: string; verifier: string; nonce: string };
 export type GoogleIdentity = { sub: string; email: string; name: string };
-export type SessionUser = { id: number; email: string; name: string };
+export type SessionUser = { id: number; email: string; name: string; timeZone: string };
 
 export interface AuthRepository {
     /** Cria/atualiza a conta pelo sub e abre uma sessão com o hash dado. */
