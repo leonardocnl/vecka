@@ -24,3 +24,34 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  # Testes de ataque das sessões (src/infrastructure/db/auth.db.test.ts) contra um PostgreSQL de
+  # verdade: banco descartável do próprio job, nunca o do projeto. Nenhum segredo.
+  auth-db:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: scripts/apply-migrations-local.sh
+      - run: npm run test:db

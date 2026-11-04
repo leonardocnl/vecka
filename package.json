@@ -12,7 +12,8 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "db:generate": "drizzle-kit generate",
-        "db:migrate": "drizzle-kit migrate"
+        "db:migrate": "drizzle-kit migrate",
+        "test:db": "VECKA_TEST_DB=1 vitest run --no-file-parallelism src/infrastructure/db/auth.db.test.ts"
     },
     "dependencies": {
         "@neondatabase/serverless": "^1.2.0",
