@@ -19,13 +19,14 @@ Adapted from the Kinne baseline. Every feature is specified, built and reviewed 
 | Another signed-in user        | Read or change someone else's tasks (IDOR)                            | §5, §12       |
 | Script against server actions | Forge or flood writes, exhaust the database                           | §5, §7        |
 | Caller of the reminder route  | Trigger notifications without the scheduler secret                    | §4, §7        |
+| Caller of the integration API | Write or read tasks without the integration key                       | §4, §5, §7    |
 | Malicious page or extension   | XSS, clickjacking, CSRF, data theft from storage                      | §6, §8, §9    |
 | Leaked credential             | Use a Google, Neon or VAPID secret                                    | §4, §11       |
 
 ## 3. Attack surface
 
 - Only routes defined in `src/app` exist. No catch-all route that echoes the requested path.
-- No `/api/*` route handlers unless a feature requires one (Google callback, reminder trigger); prefer server actions. Every route handler declares its allowed methods; unsupported methods return 404.
+- No `/api/*` route handlers unless a feature requires one (Google callback, reminder trigger, integration API); prefer server actions. Every route handler declares its allowed methods; unsupported methods return 404.
 - Unknown paths return the standard 404 page with no detail.
 - `public/` contains only static assets meant to be public. Nothing generated from environment variables.
 - `poweredByHeader: false`; no source maps in production; no debug, health or admin pages in production.
@@ -60,6 +61,12 @@ Phase 3 (history), as built:
 - `loadHistory` (`src/app/_actions/tasks.ts`) is read-only: strict schema `{ from, to }` (real dates, `from ≤ to`, at most 42 days), user from the session, generic error. `listHistory` in `tasks-sql.ts` filters by `user_id` and `deleted_at is null`; removed tasks never appear, not even in the past.
 - Past days stay read-only on the server: the write use cases still refuse any past date (`tasks.db.test.ts`, "o histórico continua só leitura no servidor").
 - Attack tests: another user reads an empty history for any range.
+
+Integration API, as built (`docs/integracoes.md`):
+
+- `src/app/api/integrations/tasks` (GET) and `.../tasks/upsert` (POST), outside the session: `src/proxy.ts` lets them through and each route checks `Authorization: Bearer` against `INTEGRATION_API_KEY` (SHA-256 of both sides, `timingSafeEqual`). Missing `INTEGRATION_API_KEY` (or shorter than 32 chars) or `INTEGRATION_USER_EMAIL` = 404; wrong key = 401 with no body. The key is never logged.
+- The owner comes only from `INTEGRATION_USER_EMAIL` (an email shared by two accounts resolves to none); every statement filters by that `user_id`. Strict zod schemas in `src/app/api/integrations/schemas.ts`; body capped at 16 KB; past days stay read-only; a completed task is never reopened and a removed one never comes back.
+- Rate limited after the key check (in-memory, 120 burst, 2/s). Tests: `integrations.db.test.ts` (`npm run test:db`).
 
 ## 6. Output, errors and logging
 
@@ -144,6 +151,8 @@ As built (phase 1):
 ## 15. Accepted risks
 
 - **`'unsafe-inline'` in `script-src`.** The Next.js runtime writes per-request inline scripts (`self.__next_f.push(...)`); only a per-request nonce would cover them, which forces dynamic rendering of every page. What still blocks: external script hosts, `eval`, `javascript:`/`data:` URLs, plugins, framing, base-tag injection, forms posted elsewhere. Mitigation: §5 and §6 (no `dangerouslySetInnerHTML`, user text always rendered as text). Revisit in phase 6.
+
+- **`?date=` on `GET /api/integrations/tasks`.** A machine-to-machine API asked for by the owner; it is never a page URL or a link. The parameter is the only one accepted (unknown or repeated parameters are refused) and is validated as a real `YYYY-MM-DD` date. It carries no secret: the key goes only in the `Authorization` header.
 
 ## 16. Known false positives
 

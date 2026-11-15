@@ -3,8 +3,10 @@ import { SESSION_COOKIE } from "@/domain/auth";
 import { appUrl } from "@/infrastructure/auth/config";
 
 // Primeira barreira: sem cookie de sessão, toda rota que não é pública vai para /entrar. A
-// conferência de verdade (banco, expiração) é feita na página com requireUser().
-const PUBLIC = /^\/(entrar(\/erro)?|api\/auth\/google(\/callback)?)$/;
+// conferência de verdade (banco, expiração) é feita na página com requireUser(). A API de
+// integração não usa sessão: a própria rota confere a chave (docs/integracoes.md).
+const PUBLIC =
+    /^\/(entrar(\/erro)?|api\/auth\/google(\/callback)?|api\/integrations\/tasks(\/upsert)?)$/;
 // páginas de desenvolvimento (src/app/dev): sem sessão, só fora de produção; em produção dão 404
 const DEV_ONLY = /^\/dev\//;
 const isDev = () => process.env.NODE_ENV !== "production";

@@ -24,6 +24,14 @@ describe("proxy", () => {
         expect(response.headers.get("location")).toBe("http://localhost:3000/entrar");
     });
 
+    it("a API de integração passa sem sessão (a rota confere a chave); o resto dela não", () => {
+        const location = (path: string) =>
+            proxy(new NextRequest(`http://localhost:3000${path}`)).headers.get("location");
+        expect(location("/api/integrations/tasks")).toBeNull();
+        expect(location("/api/integrations/tasks/upsert")).toBeNull();
+        expect(location("/api/integrations/outra")).toBe("http://localhost:3000/entrar");
+    });
+
     it("páginas /dev/ passam sem sessão só fora de produção", () => {
         const dev = () => proxy(new NextRequest("http://localhost:3000/dev/sombras"));
         expect(dev().headers.get("location")).toBeNull();

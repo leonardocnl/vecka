@@ -15,6 +15,13 @@
       "when": 1793760669889,
       "tag": "0001_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794748255911,
+      "tag": "0002_integrations",
+      "breakpoints": true
     }
   ]
 }
