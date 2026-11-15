@@ -11,6 +11,7 @@ import {
     smallint,
     text,
     timestamp,
+    uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 // Contas (plano-v2 "Modelo de dados"). A conta é o `google_sub`; o e-mail e o nome só acompanham.
@@ -72,11 +73,25 @@ export const tasks = pgTable(
         position: doublePrecision().notNull(),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         deletedAt: timestamp("deleted_at", { withTimezone: true }),
+        // tarefas criadas pela API de integração (docs/integracoes.md): a chave de quem as mandou
+        externalSource: text("external_source"),
+        externalId: text("external_id"),
+        url: text(),
     },
     (t) => [
         index("tasks_user_idx")
             .on(t.userId)
             .where(sql`${t.deletedAt} is null`),
+        uniqueIndex("tasks_external_idx")
+            .on(t.userId, t.externalSource, t.externalId)
+            .where(sql`${t.externalId} is not null`),
+        check(
+            "tasks_external_check",
+            sql`(${t.externalSource} is null) = (${t.externalId} is null)
+                and char_length(${t.externalSource}) between 1 and 64
+                and char_length(${t.externalId}) between 1 and 255`,
+        ),
+        check("tasks_url_check", sql`char_length(${t.url}) between 1 and 2048`),
         check("tasks_text_check", sql`char_length(${t.text}) between 1 and 300`),
         check("tasks_note_check", sql`char_length(${t.note}) between 1 and 1000`),
         check("tasks_time_check", sql`${t.time} ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'`),
