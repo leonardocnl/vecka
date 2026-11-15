@@ -10,13 +10,15 @@
 Só os nomes; os valores ficam no painel da Vercel (Settings → Environment Variables, ambiente
 Production) e nunca no repositório.
 
-| Nome                   | De onde vem                                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------- |
-| `APP_URL`              | Fixo: `https://dievecka.vercel.app` (origem do `redirect_uri` e de toda URL absoluta)    |
-| `DATABASE_URL_POOLED`  | Neon → Connect → connection string **com pooler** (host com `-pooler`)                   |
-| `GOOGLE_CLIENT_ID`     | Google Cloud Console → APIs e serviços → Credenciais → cliente OAuth "Aplicativo da Web" |
-| `GOOGLE_CLIENT_SECRET` | O mesmo cliente OAuth do Google                                                          |
-| `ALLOWED_EMAILS`       | Definida por você: e-mails que podem entrar, separados por vírgula                       |
+| Nome                     | De onde vem                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `APP_URL`                | Fixo: `https://dievecka.vercel.app` (origem do `redirect_uri` e de toda URL absoluta)    |
+| `DATABASE_URL_POOLED`    | Neon → Connect → connection string **com pooler** (host com `-pooler`)                   |
+| `GOOGLE_CLIENT_ID`       | Google Cloud Console → APIs e serviços → Credenciais → cliente OAuth "Aplicativo da Web" |
+| `GOOGLE_CLIENT_SECRET`   | O mesmo cliente OAuth do Google                                                          |
+| `ALLOWED_EMAILS`         | Definida por você: e-mails que podem entrar, separados por vírgula                       |
+| `INTEGRATION_API_KEY`    | Opcional: `openssl rand -hex 32` ([integracoes.md](integracoes.md))                      |
+| `INTEGRATION_USER_EMAIL` | Opcional: o e-mail da conta dona das tarefas da integração                               |
 
 `DATABASE_URL` (conexão direta do Neon, usada só pelas migrations com `npm run db:migrate`) **não**
 vai para a Vercel: as migrations rodam da máquina local.
